@@ -1,0 +1,12 @@
+{
+    "name": "Goodman Fielder Emergency Roll Call",
+    "short_name": "Emergency Roll Call",
+    "description": "Goodman Fielder offline Emergency Roll Call",
+    "start_url": "/attendance/emergency",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "landscape",
+    "background_color": "#f1f5f9",
+    "theme_color": "#991b1b",
+    "icons": []
+}
