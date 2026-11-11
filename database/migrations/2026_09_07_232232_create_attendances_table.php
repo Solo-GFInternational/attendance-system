@@ -24,9 +24,9 @@ return new class extends Migration
                 'Leave'
             ])->default('Present');
 
-            $table->time('check_in')->nullable();
+            $table->rawColumn('check_in', 'time(0)')->nullable();
 
-            $table->time('check_out')->nullable();
+            $table->rawColumn('check_out', 'time(0)')->nullable();
 
             $table->text('remarks')->nullable();
 

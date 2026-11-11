@@ -962,9 +962,9 @@ public function signIn(Request $request)
         | CALCULATE DURATION
         */
 
-        $duration = $outTime->diffInMinutes(
+        $duration = (int) round($outTime->diffInMinutes(
             $returnTime
-        );
+        ));
 
         /*
         | UPDATE OUTING
