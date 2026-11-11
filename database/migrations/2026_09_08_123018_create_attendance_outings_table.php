@@ -17,11 +17,11 @@ return new class extends Migration
 
             $table->foreignId('employee_id')
                 ->constrained('employees')
-                ->cascadeOnDelete();
+                ->noActionOnDelete();
 
-            $table->time('out_time');
+            $table->rawColumn('out_time', 'time(0)');
 
-            $table->time('return_time')->nullable();
+            $table->rawColumn('return_time', 'time(0)')->nullable();
 
             $table->unsignedInteger('duration_minutes')->nullable();
 
