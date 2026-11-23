@@ -6,6 +6,7 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Site;
+use App\Services\FaceMatcher;
 
 class EmployeeController extends Controller
 {
@@ -127,9 +128,22 @@ class EmployeeController extends Controller
         }
     }
 
-    $employee->face_descriptor = json_encode(
-        array_map('floatval', $descriptor)
-    );
+    $descriptor = array_map('floatval', array_values($descriptor));
+
+    // Refuse a face that already belongs to a different employee; a
+    // duplicate is the main way the kiosk ends up recognising the wrong person.
+    $duplicate = app(FaceMatcher::class)->findDuplicate($descriptor, $employee->id);
+
+    if ($duplicate) {
+        return response()->json([
+            'success' => false,
+            'message' => 'This face looks the same as the face registered for ' .
+                $duplicate->name . ' (' . $duplicate->employee_code . '). ' .
+                'If that registration is wrong, reset it first, then register again.',
+        ], 409);
+    }
+
+    $employee->face_descriptor = json_encode($descriptor);
 
     $employee->face_registered_at = now();
 

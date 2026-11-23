@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $httpsPort = config('app.https_proxy_port');
+
+        if ($httpsPort && ! $this->app->runningInConsole()
+            && (int) request()->getPort() === (int) $httpsPort) {
+            URL::forceScheme('https');
+        }
     }
 }

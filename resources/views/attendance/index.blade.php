@@ -19,105 +19,20 @@
 
     <script src="{{ asset('js/face-api/face-api.js') }}"></script>
 
+    @include('partials.kiosk-theme')
+
     <style>
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-
         /* =========================================================
-           HEADER
+           Employee Attendance page. Shared header, colours and
+           buttons come from partials/kiosk-theme. Class names and
+           hidden-by-default states below are used by the page
+           scripts, so keep them.
         ========================================================= */
 
-        .header {
-            background: #0f172a;
-            color: white;
-            padding: 22px 30px;
-        }
-
-        .header-inner {
-            max-width: 1200px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .header-title {
-            font-size: 25px;
-            font-weight: 700;
-        }
-
-        .header-subtitle {
-            margin-top: 5px;
-            color: #cbd5e1;
-            font-size: 14px;
-        }
-
-        .clock {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .clock-time {
-            font-size: 23px;
-            font-weight: 700;
-        }
-
-        .clock-date {
-            margin-top: 4px;
-            font-size: 13px;
-            color: #cbd5e1;
-        }
-
-
-        /* =========================================================
-           MAIN
-        ========================================================= */
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .page-title {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .back-button {
-            display: inline-block;
-            background: #334155;
-            color: white;
-            text-decoration: none;
-            padding: 11px 17px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .back-button:hover {
-            background: #1e293b;
+        .attendance-layout {
+            max-width: 880px;
+            margin: 0 auto;
         }
 
 
@@ -126,22 +41,25 @@
         ========================================================= */
 
         .alert {
-            padding: 15px 18px;
-            border-radius: 9px;
+            padding: 14px 18px;
             margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
+            line-height: 1.45;
         }
 
         .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
+            background: var(--green-soft);
+            border-color: #b7e2c6;
+            color: #0f5a2c;
         }
 
         .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
+            background: var(--red-soft);
+            border-color: #f3c6cb;
+            color: #8f1d27;
         }
 
 
@@ -152,48 +70,149 @@
         .auto-return-box {
             display: none;
             margin-bottom: 20px;
-            padding: 15px 18px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 9px;
-            color: #1e40af;
+            padding: 14px 18px;
+            background: var(--blue-soft);
+            border: 1px solid #c9d9f7;
+            border-radius: 12px;
+            color: #1a4597;
             font-weight: 600;
             text-align: center;
         }
 
         .auto-return-box strong {
             font-size: 18px;
-        }
-
-        .auto-return-countdown {
-            font-size: 22px;
-            font-weight: 700;
-            margin-left: 5px;
+            font-variant-numeric: tabular-nums;
         }
 
 
         /* =========================================================
-           CARD
+           MAIN CARD
         ========================================================= */
 
         .card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow:
-                0 2px 8px rgba(15, 23, 42, 0.06);
-            border: 1px solid #e2e8f0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
         }
 
         .card-title {
-            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 18px;
+            letter-spacing: -.01em;
+        }
+
+        .card-title .k-card-icon {
+            width: 40px;
+            height: 40px;
         }
 
 
         /* =========================================================
-           EMPLOYEE SEARCH
+           FACE RECOGNITION
+        ========================================================= */
+
+        .face-recognition-box {
+            margin-bottom: 24px;
+            padding: 24px;
+            background: linear-gradient(180deg, #f5f9ff 0%, #eef4fe 100%);
+            border: 1px solid #c9d9f7;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .face-recognition-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #173d86;
+        }
+
+        .face-recognition-title svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .face-recognition-status {
+            margin: 8px 0 16px;
+            color: #475569;
+            font-size: 15px;
+        }
+
+        /* Fixed landscape frame: a portrait tablet camera otherwise
+           produces a tall video that pushes the buttons off screen.
+           object-fit: cover crops the stream to fit the frame. */
+        .face-recognition-video {
+            display: none;
+            width: 100%;
+            max-width: 520px;
+            aspect-ratio: 4 / 3;
+            height: auto;
+            max-height: 32vh;
+            margin: 0 auto 16px;
+            border-radius: 14px;
+            background: #020617;
+            object-fit: cover;
+            box-shadow: 0 8px 24px rgba(15, 31, 61, .25);
+        }
+
+        .face-recognition-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 54px;
+            padding: 0 28px;
+            border: none;
+            border-radius: 12px;
+            background: var(--blue);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        .face-recognition-button:hover:not(:disabled) {
+            background: var(--blue-dark);
+        }
+
+        .face-recognition-button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 0 0 20px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+
+        /* =========================================================
+           EMPLOYEE SEARCH + SELECT
         ========================================================= */
 
         .employee-search-wrapper {
@@ -202,81 +221,194 @@
 
         .employee-search-label {
             display: block;
-            font-size: 14px;
-            font-weight: 700;
             margin-bottom: 7px;
-            color: #334155;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .employee-search,
+        .employee-select {
+            width: 100%;
+            min-height: 54px;
+            padding: 14px 16px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
         }
 
         .employee-search {
-            width: 100%;
-            padding: 16px 17px;
-            border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            font-size: 17px;
-            background: white;
-            color: #0f172a;
-            outline: none;
             margin-bottom: 10px;
-        }
-
-        .employee-search:focus {
-            border-color: #2563eb;
-            box-shadow:
-                0 0 0 3px rgba(37, 99, 235, 0.12);
+            padding-left: 46px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 16px center;
+            background-size: 19px;
         }
 
         .employee-search::placeholder {
-            color: #94a3b8;
+            color: #9aa5b5;
         }
 
-
-        /* =========================================================
-           EMPLOYEE SELECT
-        ========================================================= */
-
-        .employee-select {
-            width: 100%;
-            padding: 16px;
-            border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            font-size: 17px;
-            background: white;
-            outline: none;
-            color: #0f172a;
-        }
-
+        .employee-search:focus,
         .employee-select:focus {
-            border-color: #2563eb;
-            box-shadow:
-                0 0 0 3px rgba(37, 99, 235, 0.12);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(31, 95, 214, .14);
         }
 
         .employee-select option {
             padding: 12px;
         }
 
-
-        /* =========================================================
-           SEARCH MESSAGE
-        ========================================================= */
-
         .employee-search-message {
             display: none;
-            padding: 14px;
             margin-top: 10px;
+            padding: 14px;
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            color: #64748b;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--muted);
             text-align: center;
             font-size: 14px;
         }
 
-        .employee-search-count {
-            margin-top: 8px;
-            color: #64748b;
+        /* =========================================================
+           NEW EMPLOYEE FACE SETUP
+        ========================================================= */
+
+        .face-setup {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #ffffff;
+        }
+
+        .face-setup summary {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .face-setup summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .face-setup summary .k-card-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+        .face-setup-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .face-setup-text strong {
+            font-size: 16px;
+        }
+
+        .face-setup-text small {
+            color: var(--muted);
             font-size: 13px;
+        }
+
+        .face-setup-count {
+            margin-left: auto;
+            min-width: 30px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: var(--violet-soft);
+            color: var(--violet);
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .face-setup[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .face-setup-body {
+            padding: 16px 18px 18px;
+        }
+
+        .setup-list {
+            display: grid;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .setup-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            min-height: 60px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--text);
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color .15s ease, background .15s ease;
+        }
+
+        .setup-item:hover {
+            border-color: #c4b5fd;
+            background: #faf8ff;
+        }
+
+        .setup-item.selected {
+            border-color: var(--violet);
+            background: var(--violet-soft);
+        }
+
+        .setup-avatar {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--violet-soft);
+            color: var(--violet);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .setup-name {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .setup-name strong {
+            font-size: 15px;
+        }
+
+        .setup-name small {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .setup-empty {
+            padding: 14px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 14px;
         }
 
 
@@ -285,12 +417,13 @@
         ========================================================= */
 
         .employee-status {
-            margin-top: 18px;
-            padding: 16px;
-            border-radius: 9px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
             display: none;
+            margin-top: 20px;
+            padding: 18px 20px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--blue);
+            border-radius: 12px;
         }
 
         .employee-name {
@@ -299,13 +432,13 @@
         }
 
         .employee-code {
-            margin-top: 4px;
-            color: #64748b;
+            margin-top: 3px;
+            color: var(--muted);
             font-size: 14px;
         }
 
         .status-message {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 15px;
             color: #475569;
         }
@@ -315,149 +448,296 @@
            ACTION BUTTONS
         ========================================================= */
 
+        /* Only the buttons that apply are shown (others are display:none),
+           so one button fills the row and two share it. */
         .actions {
             display: grid;
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 14px;
-            margin-top: 20px;
+            margin-top: 18px;
         }
 
-        .action-button {
-            border: none;
-            border-radius: 10px;
-            padding: 18px;
-            font-size: 17px;
-            font-weight: 700;
-            cursor: pointer;
-            min-height: 62px;
-        }
-
-        .action-button:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
-
-        .sign-in {
-            background: #16a34a;
-            color: white;
-        }
-
-        .sign-in:hover:not(:disabled) {
-            background: #15803d;
-        }
-
-        .going-out {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .going-out:hover:not(:disabled) {
-            background: #d97706;
-        }
-
-        .returning {
-            background: #2563eb;
-            color: white;
-        }
-
-        .returning:hover:not(:disabled) {
-            background: #1d4ed8;
-        }
-
-        .sign-out {
-            background: #dc2626;
-            color: white;
-        }
-
-        .sign-out:hover:not(:disabled) {
-            background: #b91c1c;
+        .action-button svg {
+            width: 22px;
+            height: 22px;
         }
 
 
         /* =========================================================
-           REASON
+           GREETING POP-UP
+        ========================================================= */
+
+        .greeting-modal {
+            max-width: 560px;
+        }
+
+        .greeting-head {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 24px;
+            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: #ffffff;
+        }
+
+        .greeting-avatar {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .14);
+            border: 2px solid rgba(255, 255, 255, .35);
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+
+        .greeting-who {
+            min-width: 0;
+        }
+
+        .greeting-hi {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -.01em;
+        }
+
+        .greeting-head .employee-code {
+            margin-top: 4px;
+            color: #b6c2d9;
+        }
+
+        .greeting-close {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            margin-left: auto;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .08);
+            color: #ffffff;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .greeting-close:hover {
+            background: rgba(255, 255, 255, .16);
+        }
+
+        .greeting-body {
+            padding: 22px 24px 18px;
+        }
+
+        .greeting-modal .employee-status {
+            margin: 0;
+            padding: 0;
+            background: none;
+            border: 0;
+        }
+
+        .greeting-modal .status-message {
+            margin: 0;
+            font-size: 17px;
+            color: var(--text);
+        }
+
+        .greeting-modal .history {
+            margin-top: 20px;
+            padding-top: 16px;
+        }
+
+        .greeting-foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .greeting-link {
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--blue);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .greeting-foot strong {
+            font-variant-numeric: tabular-nums;
+        }
+
+
+        /* Register My Face (inside "New employee?" section) */
+
+        .setup-register {
+            margin-top: 14px;
+            padding: 16px;
+            background: var(--violet-soft);
+            border: 1px solid #d9ccfb;
+            border-radius: 12px;
+        }
+
+        .setup-register-message {
+            margin-bottom: 12px;
+            color: #4c1d95;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .setup-register .action-button {
+            width: 100%;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            width: 100%;
+            min-height: 64px;
+            padding: 0 18px;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background .15s ease, opacity .15s ease;
+        }
+
+        .action-button:disabled {
+            opacity: .38;
+            cursor: not-allowed;
+        }
+
+        .action-button:focus-visible {
+            outline: 3px solid rgba(31, 95, 214, .45);
+            outline-offset: 2px;
+        }
+
+        .sign-in   { background: var(--green); }
+        .sign-in:hover:not(:disabled)   { background: var(--green-dark); }
+
+        .going-out { background: #c46a0a; }
+        .going-out:hover:not(:disabled) { background: #a85a08; }
+
+        .returning { background: var(--blue); }
+        .returning:hover:not(:disabled) { background: var(--blue-dark); }
+
+        .sign-out  { background: var(--red); }
+        .sign-out:hover:not(:disabled)  { background: var(--red-dark); }
+
+        #registerMyFaceButton {
+            background: var(--violet) !important;
+        }
+
+
+        /* =========================================================
+           GOING OUT REASON
         ========================================================= */
 
         .reason-box {
             display: none;
-            margin-top: 15px;
-            padding: 16px;
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 10px;
+            margin-top: 16px;
+            padding: 18px;
+            background: var(--amber-soft);
+            border: 1px solid #f6dca6;
+            border-radius: 12px;
         }
 
         .reason-box label {
             display: block;
+            margin-bottom: 7px;
             font-size: 14px;
             font-weight: 700;
-            margin-bottom: 7px;
-            color: #92400e;
+            color: #7c4a03;
         }
 
         .reason-required {
-            color: #dc2626;
+            color: var(--red);
             margin-left: 3px;
         }
 
         .reason-box input {
             width: 100%;
-            padding: 13px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
+            min-height: 52px;
+            padding: 13px 15px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            font-family: inherit;
+            font-size: 16px;
             outline: none;
-            background: white;
         }
 
         .reason-box input:focus {
-            border-color: #f59e0b;
-            box-shadow:
-                0 0 0 3px rgba(245, 158, 11, 0.12);
+            border-color: #c46a0a;
+            box-shadow: 0 0 0 4px rgba(196, 106, 10, .14);
         }
 
         .reason-box input.invalid {
-            border-color: #dc2626;
-            box-shadow:
-                0 0 0 3px rgba(220, 38, 38, 0.10);
+            border-color: var(--red);
+            box-shadow: 0 0 0 4px rgba(198, 47, 59, .12);
         }
 
         .reason-help {
             margin-top: 6px;
-            color: #92400e;
-            font-size: 12px;
+            color: #7c4a03;
+            font-size: 12.5px;
         }
 
         .reason-error {
             display: none;
             margin-top: 8px;
-            color: #dc2626;
+            color: var(--red);
             font-size: 13px;
             font-weight: 700;
         }
 
 
         /* =========================================================
-           HISTORY
+           OUTING HISTORY (rows are built by the page script)
         ========================================================= */
 
         .history {
-            margin-top: 25px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
         }
 
         .history-title {
-            font-size: 17px;
+            margin-bottom: 8px;
+            font-size: 16px;
             font-weight: 700;
-            margin-bottom: 12px;
         }
 
         .outing-row {
             display: flex;
             justify-content: space-between;
             gap: 20px;
-            padding: 13px 0;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+            border-bottom: 1px solid #eef1f5;
         }
 
         .outing-row:last-child {
@@ -465,9 +745,9 @@
         }
 
         .outing-reason {
-            color: #64748b;
-            font-size: 13px;
             margin-top: 3px;
+            color: var(--muted);
+            font-size: 13px;
         }
 
         .outing-time {
@@ -482,61 +762,85 @@
         ========================================================= */
 
         .quick-links {
-            margin-top: 25px;
             display: grid;
-            grid-template-columns:
-                repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 14px;
+            margin-top: 20px;
         }
 
         .quick-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            color: var(--text);
+            font-weight: 600;
             text-decoration: none;
-            background: white;
-            border: 1px solid #e2e8f0;
-            color: #0f172a;
-            border-radius: 10px;
-            padding: 17px;
-            text-align: center;
-            font-weight: 700;
+            transition: box-shadow .2s ease, border-color .2s ease;
         }
 
         .quick-link:hover {
-            background: #f8fafc;
+            border-color: #d3dae6;
+            box-shadow: var(--shadow-hover);
+        }
+
+        .quick-link .k-card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+        }
+
+        .quick-link .k-card-icon svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        .quick-link .chev {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            color: #94a3b8;
         }
 
 
         /* =========================================================
-           CAMERA MODAL
+           CAMERA MODALS
         ========================================================= */
 
         .camera-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.88);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
             padding: 20px;
+            background: rgba(15, 31, 61, .82);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
         }
 
         .camera-modal {
             width: 100%;
-            max-width: 650px;
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow:
-                0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 660px;
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .35);
         }
 
         .camera-header {
-            background: #0f172a;
-            color: white;
-            padding: 18px 22px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 22px;
+            background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+            color: #ffffff;
         }
 
         .camera-title {
@@ -545,143 +849,117 @@
         }
 
         .camera-subtitle {
-            margin-top: 4px;
-            color: #cbd5e1;
-            font-size: 13px;
+            margin-top: 3px;
+            color: #b6c2d9;
+            font-size: 14px;
         }
 
         .camera-close {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 27px;
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .08);
+            color: #ffffff;
+            font-size: 24px;
+            line-height: 1;
             cursor: pointer;
         }
 
+        .camera-close:hover {
+            background: rgba(255, 255, 255, .16);
+        }
+
         .camera-body {
-            padding: 20px;
+            padding: 22px;
+        }
+
+        .camera-preview,
+        .photo-preview {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            height: auto;
+            max-height: 42vh;
+            background: #020617;
+            border-radius: 14px;
+            object-fit: cover;
         }
 
         .camera-preview {
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background: #020617;
-            border-radius: 10px;
-            object-fit: cover;
             display: block;
         }
 
         .photo-preview {
             display: none;
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background: #020617;
-            border-radius: 10px;
-            object-fit: cover;
         }
 
         .camera-instruction {
+            margin: 12px 0 16px;
             text-align: center;
-            margin: 15px 0;
             color: #475569;
             font-size: 14px;
         }
 
-
-        /* =========================================================
-           FACE STATUS
-        ========================================================= */
-
         .face-status {
-            text-align: center;
-            margin: 15px 0 8px;
+            margin: 16px 0 6px;
             padding: 12px;
-            border-radius: 8px;
-            background: #fef2f2;
-            color: #991b1b;
+            border-radius: 10px;
+            background: var(--red-soft);
+            color: #8f1d27;
+            text-align: center;
             font-size: 15px;
             font-weight: 700;
-            transition:
-                background 0.2s ease,
-                color 0.2s ease;
+            transition: background .2s ease, color .2s ease;
         }
-
-
-        /* =========================================================
-           CAMERA BUTTONS
-        ========================================================= */
 
         .camera-actions {
             display: grid;
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
             gap: 12px;
         }
 
         .camera-button {
-            border: none;
-            border-radius: 9px;
-            padding: 15px;
+            min-height: 54px;
+            padding: 0 16px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-family: inherit;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
+            transition: background .15s ease, opacity .15s ease;
         }
 
         .camera-button:disabled {
-            opacity: 0.45;
+            opacity: .45;
             cursor: not-allowed;
         }
 
-        .take-photo {
-            background: #16a34a;
-            color: white;
-        }
-
-        .confirm-photo {
-            background: #2563eb;
-            color: white;
-        }
-
-        .retake-photo {
-            background: #64748b;
-            color: white;
-        }
-
-        .cancel-photo {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
+        .take-photo    { background: var(--green); color: #ffffff; }
+        .confirm-photo { background: var(--blue);  color: #ffffff; }
+        .retake-photo  { background: #64748b;      color: #ffffff; }
+        .cancel-photo  { background: #ffffff; color: #374151; border-color: var(--border-strong); }
+        .cancel-photo:hover { background: #f3f5f9; }
 
         .camera-error {
             display: none;
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 13px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+            padding: 13px 14px;
+            background: var(--red-soft);
+            border: 1px solid #f3c6cb;
+            border-radius: 10px;
+            color: #8f1d27;
             font-size: 14px;
         }
 
         .saving-message {
             display: none;
+            padding: 14px;
             text-align: center;
-            padding: 15px;
             font-weight: 700;
-            color: #2563eb;
-        }
-
-
-        /* =========================================================
-           FOOTER
-        ========================================================= */
-
-        .footer {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px 25px;
-            text-align: center;
-            color: #64748b;
-            font-size: 13px;
+            color: var(--blue);
         }
 
 
@@ -691,98 +969,19 @@
 
         @media (max-width: 750px) {
 
-            .header {
-                padding: 18px 20px;
+            .card {
+                padding: 20px;
             }
 
-            .header-inner {
-                flex-direction: column;
-                align-items: flex-start;
+            .face-recognition-box {
+                padding: 18px;
             }
 
-            .clock {
-                text-align: left;
-            }
-
-            .container {
-                margin-top: 20px;
-            }
-
-            .top-row {
-                align-items: flex-start;
-                gap: 12px;
-                flex-direction: column;
-            }
-
-            .actions {
-                grid-template-columns: 1fr;
-            }
-
-            .quick-links {
-                grid-template-columns: 1fr;
-            }
-
+            .actions,
             .camera-actions {
                 grid-template-columns: 1fr;
             }
-
         }
-
-        /* =========================================================
-   FACE RECOGNITION
-========================================================= */
-
-.face-recognition-box {
-    margin-bottom: 20px;
-    padding: 18px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.face-recognition-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: #1e3a8a;
-    margin-bottom: 6px;
-}
-
-.face-recognition-status {
-    margin: 8px 0 14px;
-    color: #475569;
-    font-size: 14px;
-}
-
-.face-recognition-video {
-    display: none;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto 15px;
-    border-radius: 10px;
-    background: #020617;
-    object-fit: cover;
-}
-
-.face-recognition-button {
-    border: none;
-    border-radius: 9px;
-    padding: 14px 22px;
-    background: #2563eb;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.face-recognition-button:hover {
-    background: #1d4ed8;
-}
-
-.face-recognition-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
 
     </style>
 
@@ -792,63 +991,23 @@
 <body>
 
 
-<header class="header">
+@php
+    $kioskSite = $selectedSite ? \App\Models\Site::find($selectedSite) : null;
+@endphp
 
-    <div class="header-inner">
-
-        <div>
-
-            <div class="header-title">
-                Goodman Fielder Attendance System
-            </div>
-
-            <div class="header-subtitle">
-                Employee Attendance
-            </div>
-
-        </div>
+{{-- #liveClock / #liveDate in this header are updated by the page script below. --}}
+@include('partials.kiosk-header', [
+    'variant'     => 'page',
+    'title'       => 'Employee Attendance',
+    'subtitle'    => 'Sign in, sign out, going out or returning.',
+    'icon'        => 'users',
+    'site'        => $kioskSite,
+    'clockScript' => false,
+])
 
 
-        <div class="clock">
-
-            <div
-                class="clock-time"
-                id="liveClock"
-            >
-                --:--:--
-            </div>
-
-            <div
-                class="clock-date"
-                id="liveDate"
-            >
-                Loading...
-            </div>
-
-        </div>
-
-    </div>
-
-</header>
-
-
-<main class="container">
-
-
-    <div class="top-row">
-
-        <div class="page-title">
-            Employee Attendance
-        </div>
-
-        <a
-            href="{{ route('attendance.index') }}"
-            class="back-button"
-        >
-            ← MAIN MENU
-        </a>
-
-    </div>
+<main class="k-main">
+<div class="attendance-layout">
 
 
     {{-- SUCCESS MESSAGE --}}
@@ -924,7 +1083,8 @@
 
 
         <div class="card-title">
-            Select Employee
+            <span class="k-card-icon">@include('partials.kiosk-icon', ['name' => 'user'])</span>
+            Identify Yourself
         </div>
 <!-- =====================================================
      FACE RECOGNITION
@@ -933,7 +1093,8 @@
 <div class="face-recognition-box">
 
     <div class="face-recognition-title">
-        📷 Face Recognition
+        @include('partials.kiosk-icon', ['name' => 'scan'])
+        Face Recognition
     </div>
 
     <div
@@ -956,281 +1117,131 @@
         id="startRecognitionButton"
         class="face-recognition-button"
     >
-        📷 Face Recognition
+        @include('partials.kiosk-icon', ['name' => 'camera'])
+        Start Face Recognition
     </button>
 
 </div>
 
         {{-- =====================================================
-             EMPLOYEE SEARCH
+             EMPLOYEE (selected automatically by face recognition)
+
+             Hidden: face recognition sets its value, and the page
+             scripts read the selected employee from it. Employees
+             are not picked by name any more.
         ====================================================== --}}
 
-        <div class="employee-search-wrapper">
-
-            <label
-                for="employeeSearch"
-                class="employee-search-label"
-            >
-                Search Employee
-            </label>
-
-
-            <input
-                type="text"
-                id="employeeSearch"
-                class="employee-search"
-                placeholder="🔍 Search employee name or ID..."
-                autocomplete="off"
-                autocapitalize="none"
-                spellcheck="false"
-            >
-
-
-            <select
-                id="employeeSelect"
-                class="employee-select"
-            >
-
-                <option value="">
-                    -- Select Employee --
-                </option>
-
-                @foreach($employees as $employee)
-
-                    <option
-    value="{{ $employee->id }}"
-    data-name="{{ $employee->name }}"
-    data-code="{{ $employee->employee_code }}"
-    data-face-registered="{{ $employee->face_descriptor ? '1' : '0' }}"
->
-                        {{ $employee->name }}
-
-                        @if($employee->employee_code)
-
-                            ({{ $employee->employee_code }})
-
-                        @endif
-
-                    </option>
-
-                @endforeach
-
-            </select>
-
-
-            <div
-                id="employeeSearchMessage"
-                class="employee-search-message"
-            >
-                No employees found.
-            </div>
-
-
-            <div
-                id="employeeSearchCount"
-                class="employee-search-count"
-            >
-                Showing all employees
-            </div>
-
-        </div>
-
-
-        {{-- =====================================================
-             EMPLOYEE STATUS
-        ====================================================== --}}
-
-        <div
-            id="employeeStatus"
-            class="employee-status"
-        >
-
-            <div
-                id="employeeName"
-                class="employee-name"
-            >
-                -
-            </div>
-
-            <div
-                id="employeeCode"
-                class="employee-code"
-            >
-                -
-            </div>
-
-            <div
-                id="statusMessage"
-                class="status-message"
-            >
-                Select an employee.
-            </div>
-<div
-    id="faceRegistrationArea"
-    style="display:none; margin-top:15px;"
->
-
-    <button
-        type="button"
-        id="registerMyFaceButton"
-        class="action-button"
-        style="
-            width:100%;
-            background:#7c3aed;
-            color:white;
-        "
-    >
-        📸 REGISTER MY FACE
-    </button>
-
-    <div
-        id="faceRegistrationMessage"
-        style="
-            margin-top:8px;
-            color:#64748b;
-            font-size:13px;
-            text-align:center;
-        "
-    >
-        Your face has not been registered yet.
-    </div>
-
-</div>
-        </div>
-
-
-        {{-- =====================================================
-             ACTIONS
-        ====================================================== --}}
-
-        <div class="actions">
-
-
-            <button
-                type="button"
-                id="signInButton"
-                class="action-button sign-in"
-                disabled
-            >
-                📷 SIGN IN
-            </button>
-
-
-            <button
-                type="button"
-                id="goingOutButton"
-                class="action-button going-out"
-                disabled
-            >
-                GOING OUT
-            </button>
-
-
-            <button
-                type="button"
-                id="returningButton"
-                class="action-button returning"
-                disabled
-            >
-                RETURNING
-            </button>
-
-
-            <form
-                method="POST"
-                action="{{ route('attendance.sign-out') }}"
-                id="signOutForm"
-            >
-
-                @csrf
-
-                <input
-                    type="hidden"
-                    name="employee_id"
-                    id="signOutEmployeeId"
-                >
-
-                <button
-                    type="submit"
-                    id="signOutButton"
-                    class="action-button sign-out"
-                    style="width:100%;"
-                    disabled
-                >
-                    SIGN OUT
-                </button>
-
-            </form>
-
-
-        </div>
-
-
-        {{-- =====================================================
-             GOING OUT REASON
-        ====================================================== --}}
-
-        <div
-            id="reasonBox"
-            class="reason-box"
-        >
-
-            <label for="outingReason">
-                Reason for going out
-                <span class="reason-required">*</span>
-            </label>
-
-            <input
-                type="text"
-                id="outingReason"
-                placeholder="Please enter a reason"
-                maxlength="255"
-                required
-                autocomplete="off"
-            >
-
-            <div class="reason-help">
-                A reason is required before you can confirm going out.
-            </div>
-
-            <div
-                id="reasonError"
-                class="reason-error"
-            >
-                Please enter a reason before continuing.
-            </div>
-
-            <button
-                type="button"
-                id="confirmGoingOut"
-                class="action-button going-out"
-                style="width:100%; margin-top:10px;"
-                disabled
-            >
-                CONFIRM GOING OUT
-            </button>
-
-        </div>
-
-
-        {{-- =====================================================
-             OUTING HISTORY
-        ====================================================== --}}
-
-        <div
-            id="history"
-            class="history"
+        <select
+            id="employeeSelect"
+            class="employee-select"
             style="display:none;"
+            aria-hidden="true"
+            tabindex="-1"
         >
+            <option value=""></option>
 
-            <div class="history-title">
-                Today's Outing History
-            </div>
+            @foreach($employees as $employee)
+                <option
+                    value="{{ $employee->id }}"
+                    data-name="{{ $employee->name }}"
+                    data-code="{{ $employee->employee_code }}"
+                    data-face-registered="{{ $employee->face_descriptor ? '1' : '0' }}"
+                >{{ $employee->name }}</option>
+            @endforeach
+        </select>
 
-            <div id="historyRows"></div>
 
-        </div>
+        {{-- =====================================================
+             NEW EMPLOYEE: FACE SETUP
+             Lists only employees who have not set up their face yet.
+        ====================================================== --}}
 
+        @php
+            $needsFaceSetup = $employees->filter(fn ($e) => empty($e->face_descriptor))->values();
+        @endphp
+
+        @if($needsFaceSetup->isNotEmpty())
+
+            <details class="face-setup" id="faceSetup">
+
+                <summary>
+                    <span class="k-card-icon violet">@include('partials.kiosk-icon', ['name' => 'user'])</span>
+                    <span class="face-setup-text">
+                        <strong>New employee? Set up face recognition</strong>
+                        <small>One-time setup for employees who have not registered their face yet.</small>
+                    </span>
+                    <span class="face-setup-count" id="faceSetupCount">{{ $needsFaceSetup->count() }}</span>
+                </summary>
+
+                <div class="face-setup-body">
+
+                    <input
+                        type="text"
+                        id="setupSearch"
+                        class="employee-search"
+                        placeholder="Search your name or employee ID…"
+                        autocomplete="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        aria-label="Search your name or employee ID"
+                    >
+
+                    <div class="setup-list" id="setupList">
+                        @foreach($needsFaceSetup as $employee)
+                            @php
+                                $initials = collect(preg_split('/\s+/', trim($employee->name)))
+                                    ->filter()->take(2)
+                                    ->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))
+                                    ->implode('');
+                            @endphp
+                            <button
+                                type="button"
+                                class="setup-item"
+                                data-id="{{ $employee->id }}"
+                                data-search="{{ mb_strtolower($employee->name . ' ' . $employee->employee_code) }}"
+                            >
+                                <span class="setup-avatar">{{ $initials }}</span>
+                                <span class="setup-name">
+                                    <strong>{{ $employee->name }}</strong>
+                                    <small>
+                                        ID: {{ $employee->employee_code }}@if($employee->department) · {{ $employee->department }}@endif
+                                    </small>
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="setup-empty" id="setupEmpty" style="display:none;">
+                        No matching employees. If your face is already set up, use face recognition above.
+                    </div>
+
+                    {{-- Shown after a name is picked above. --}}
+                    <div
+                        id="faceRegistrationArea"
+                        class="setup-register"
+                        style="display:none;"
+                    >
+                        <div
+                            id="faceRegistrationMessage"
+                            class="setup-register-message"
+                        >
+                            Your face has not been registered yet.
+                        </div>
+
+                        <button
+                            type="button"
+                            id="registerMyFaceButton"
+                            class="action-button"
+                        >
+                            📸 REGISTER MY FACE
+                        </button>
+                    </div>
+
+                </div>
+
+            </details>
+
+        @endif
 
     </div>
 
@@ -1242,43 +1253,225 @@
     <div class="quick-links">
 
 
-        <a
-            href="{{ route('attendance.emergency') }}"
-            class="quick-link"
-        >
-            🚨 Emergency Roll Call
+        <a href="{{ route('visitors.index') }}" class="quick-link">
+            <span class="k-card-icon green">@include('partials.kiosk-icon', ['name' => 'badge'])</span>
+            Visitor Register
+            <span class="chev">@include('partials.kiosk-icon', ['name' => 'arrow'])</span>
         </a>
 
-
-        <a
-            href="{{ route('visitors.index') }}"
-            class="quick-link"
-        >
-            👤 Visitor Register
+        <a href="{{ route('attendance.emergency') }}" class="quick-link">
+            <span class="k-card-icon red">@include('partials.kiosk-icon', ['name' => 'alert'])</span>
+            Emergency Roll Call
+            <span class="chev">@include('partials.kiosk-icon', ['name' => 'arrow'])</span>
         </a>
-
 
         @auth
-
-            <a
-                href="{{ route('employees.index') }}"
-                class="quick-link"
-            >
-                👥 Employee Management
+            <a href="{{ route('employees.index') }}" class="quick-link">
+                <span class="k-card-icon">@include('partials.kiosk-icon', ['name' => 'users'])</span>
+                Employee Management
+                <span class="chev">@include('partials.kiosk-icon', ['name' => 'arrow'])</span>
             </a>
-
         @endauth
-
 
     </div>
 
-
+</div>
 </main>
 
 
-<div class="footer">
+<footer class="k-footer">
+    @include('partials.kiosk-icon', ['name' => 'info'])
+    Please remember to sign out when you leave the premises.
+</footer>
 
-    Please ensure you sign out when leaving the premises.
+
+
+{{-- =========================================================
+     GREETING POP-UP
+     Opens after face recognition: "Hi, Name" with only the
+     actions that apply right now (sign in / going out + sign out /
+     returning). Element IDs are used by the page scripts.
+========================================================= --}}
+
+<div
+    id="greetingOverlay"
+    class="camera-overlay"
+>
+
+    <div
+        class="camera-modal greeting-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="greetingTitle"
+    >
+
+        <div class="greeting-head">
+
+            <div class="greeting-avatar" id="greetingAvatar" aria-hidden="true"></div>
+
+            <div class="greeting-who">
+                <div class="greeting-hi" id="greetingTitle">
+                    Hi, <span id="employeeName">-</span>
+                </div>
+                <div id="employeeCode" class="employee-code">-</div>
+            </div>
+
+            <button
+                type="button"
+                class="greeting-close"
+                id="greetingClose"
+                aria-label="Close"
+            >×</button>
+
+        </div>
+
+
+        <div class="greeting-body">
+
+            <div
+                id="employeeStatus"
+                class="employee-status"
+            >
+                <div
+                    id="statusMessage"
+                    class="status-message"
+                ></div>
+            </div>
+
+
+            {{-- ACTIONS: only the ones that apply are shown --}}
+
+            <div class="actions">
+
+                <button
+                    type="button"
+                    id="signInButton"
+                    class="action-button sign-in"
+                    disabled
+                >
+                    @include('partials.kiosk-icon', ['name' => 'login'])
+                    SIGN IN
+                </button>
+
+                <button
+                    type="button"
+                    id="goingOutButton"
+                    class="action-button going-out"
+                    disabled
+                >
+                    @include('partials.kiosk-icon', ['name' => 'walk'])
+                    GOING OUT
+                </button>
+
+                <button
+                    type="button"
+                    id="returningButton"
+                    class="action-button returning"
+                    disabled
+                >
+                    @include('partials.kiosk-icon', ['name' => 'return'])
+                    RETURNING
+                </button>
+
+                <form
+                    method="POST"
+                    action="{{ route('attendance.sign-out') }}"
+                    id="signOutForm"
+                >
+                    @csrf
+
+                    <input
+                        type="hidden"
+                        name="employee_id"
+                        id="signOutEmployeeId"
+                    >
+
+                    <button
+                        type="submit"
+                        id="signOutButton"
+                        class="action-button sign-out"
+                        style="width:100%;"
+                        disabled
+                    >
+                        @include('partials.kiosk-icon', ['name' => 'logout'])
+                        SIGN OUT
+                    </button>
+                </form>
+
+            </div>
+
+
+            {{-- GOING OUT REASON --}}
+
+            <div
+                id="reasonBox"
+                class="reason-box"
+            >
+
+                <label for="outingReason">
+                    Reason for going out
+                    <span class="reason-required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="outingReason"
+                    placeholder="Please enter a reason"
+                    maxlength="255"
+                    required
+                    autocomplete="off"
+                >
+
+                <div class="reason-help">
+                    A reason is required before you can confirm going out.
+                </div>
+
+                <div
+                    id="reasonError"
+                    class="reason-error"
+                >
+                    Please enter a reason before continuing.
+                </div>
+
+                <button
+                    type="button"
+                    id="confirmGoingOut"
+                    class="action-button going-out"
+                    style="width:100%; margin-top:10px;"
+                    disabled
+                >
+                    CONFIRM GOING OUT
+                </button>
+
+            </div>
+
+
+            {{-- TODAY'S OUTINGS --}}
+
+            <div
+                id="history"
+                class="history"
+                style="display:none;"
+            >
+                <div class="history-title">
+                    Today's Outing History
+                </div>
+
+                <div id="historyRows"></div>
+            </div>
+
+
+            <div class="greeting-foot">
+                <span>
+                    Not you?
+                    <button type="button" class="greeting-link" id="greetingRetry">Scan again</button>
+                </span>
+                <span>Closes in <strong id="greetingCountdown">15</strong>s</span>
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -1606,6 +1799,7 @@ document.addEventListener(
                 new Date();
 
 
+            // Same format as the shared kiosk header on the other pages.
             document.getElementById(
                 'liveClock'
             ).textContent =
@@ -1614,9 +1808,9 @@ document.addEventListener(
                     {
                         hour: '2-digit',
                         minute: '2-digit',
-                        second: '2-digit'
+                        hour12: true
                     }
-                );
+                ).toUpperCase();
 
 
             document.getElementById(
@@ -1630,7 +1824,7 @@ document.addEventListener(
                         month: 'long',
                         day: 'numeric'
                     }
-                );
+                ).replace(/,/g, '');
 
         }
 
@@ -1648,28 +1842,20 @@ document.addEventListener(
            ELEMENTS
         ========================================================= */
 
-        const employeeSearch =
-            document.getElementById(
-                'employeeSearch'
-            );
-
-
         const employeeSelect =
             document.getElementById(
                 'employeeSelect'
             );
 
 
-        const employeeSearchMessage =
-            document.getElementById(
-                'employeeSearchMessage'
-            );
+        const greetingOverlay =
+            document.getElementById('greetingOverlay');
 
+        const greetingAvatar =
+            document.getElementById('greetingAvatar');
 
-        const employeeSearchCount =
-            document.getElementById(
-                'employeeSearchCount'
-            );
+        const greetingCountdown =
+            document.getElementById('greetingCountdown');
 
 
         const employeeStatus =
@@ -1790,17 +1976,6 @@ document.addEventListener(
             AUTO_RETURN_SECONDS;
 
 
-        /* =========================================================
-           SAVE ORIGINAL EMPLOYEE OPTIONS
-        ========================================================= */
-
-        const originalEmployeeOptions =
-            Array.from(
-                employeeSelect.options
-            ).map(
-                option =>
-                    option.cloneNode(true)
-            );
 
 
         /* =========================================================
@@ -1895,6 +2070,13 @@ document.addEventListener(
             }
 
 
+            if (greetingCountdown)
+            {
+                greetingCountdown.textContent =
+                    autoReturnSeconds;
+            }
+
+
             if (autoReturnBox)
             {
 
@@ -1936,6 +2118,13 @@ document.addEventListener(
                             autoReturnCountdown.textContent =
                                 autoReturnSeconds;
 
+                        }
+
+
+                        if (greetingCountdown)
+                        {
+                            greetingCountdown.textContent =
+                                autoReturnSeconds;
                         }
 
 
@@ -2024,153 +2213,6 @@ document.addEventListener(
         );
 
 
-        /* =========================================================
-           EMPLOYEE SEARCH
-        ========================================================= */
-
-        function filterEmployees()
-        {
-
-            const search =
-                employeeSearch.value
-                    .trim()
-                    .toLowerCase();
-
-
-            employeeSelect.value =
-                '';
-
-
-            resetEmployeeSelection();
-
-
-            const employeeOptions =
-                originalEmployeeOptions.filter(
-                    option =>
-                        option.value !== ''
-                );
-
-
-            if (!search)
-            {
-
-                employeeSelect.innerHTML =
-                    '';
-
-
-                originalEmployeeOptions.forEach(
-                    option =>
-                        employeeSelect.appendChild(
-                            option.cloneNode(true)
-                        )
-                );
-
-
-                employeeSearchMessage.style.display =
-                    'none';
-
-
-                employeeSearchCount.textContent =
-                    'Showing all employees';
-
-
-                return;
-
-            }
-
-
-            const matches =
-                employeeOptions.filter(
-                    option =>
-                    {
-
-                        const name =
-                            (
-                                option.dataset.name ||
-                                ''
-                            ).toLowerCase();
-
-
-                        const code =
-                            (
-                                option.dataset.code ||
-                                ''
-                            ).toLowerCase();
-
-
-                        return (
-                            name.includes(search) ||
-                            code.includes(search)
-                        );
-
-                    }
-                );
-
-
-            employeeSelect.innerHTML =
-                '';
-
-
-            const placeholder =
-                originalEmployeeOptions.find(
-                    option =>
-                        option.value === ''
-                );
-
-
-            if (placeholder)
-            {
-
-                employeeSelect.appendChild(
-                    placeholder.cloneNode(true)
-                );
-
-            }
-
-
-            matches.forEach(
-                option =>
-                    employeeSelect.appendChild(
-                        option.cloneNode(true)
-                    )
-            );
-
-
-            if (matches.length === 0)
-            {
-
-                employeeSearchMessage.style.display =
-                    'block';
-
-
-                employeeSearchCount.textContent =
-                    '0 employees found';
-
-            }
-            else
-            {
-
-                employeeSearchMessage.style.display =
-                    'none';
-
-
-                employeeSearchCount.textContent =
-                    matches.length +
-                    (
-                        matches.length === 1
-                            ? ' employee found'
-                            : ' employees found'
-                    );
-
-            }
-
-        }
-
-
-        employeeSearch.addEventListener(
-            'input',
-            filterEmployees
-        );
 
 
         /* =========================================================
@@ -3013,21 +3055,152 @@ delegate:
            UPDATE STATUS
         ========================================================= */
 
-        function updateEmployeeStatus(
+        /* =========================================================
+           SHOW STATUS IN THE "HI, NAME" POP-UP
+           Only the buttons that apply are shown:
+             not signed in      -> Sign In
+             signed in          -> Going Out, Sign Out
+             currently out      -> Returning
+        ========================================================= */
+
+        function updateEmployeeStatus(data)
+        {
+            applyEmployeeStatus(data);
+
+            const option =
+                employeeSelect.options[employeeSelect.selectedIndex];
+
+            // Face not set up yet: registration happens in the
+            // "New employee?" section, not in the pop-up.
+            if (!option || !option.value || option.dataset.faceRegistered === '0')
+            {
+                return;
+            }
+
+            [signInButton, goingOutButton, returningButton, signOutButton].forEach(button =>
+            {
+                const holder = button.closest('form') || button;
+                holder.style.display = button.disabled ? 'none' : '';
+            });
+
+            if (data.status === 'completed')
+            {
+                statusMessage.textContent =
+                    'You are done for today. Signed in at ' + data.check_in +
+                    ' and signed out at ' + data.check_out + '.';
+            }
+
+            openGreeting(option.dataset.name || '');
+        }
+
+
+        function openGreeting(name)
+        {
+            if (greetingAvatar)
+            {
+                greetingAvatar.textContent = name
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(part => part.charAt(0).toUpperCase())
+                    .join('');
+            }
+
+            reasonBox.style.display = 'none';
+            resetReason();
+
+            greetingOverlay.style.display = 'flex';
+
+            // The person is identified, so release the camera.
+            if (window.attendanceFaceRecognition)
+            {
+                window.attendanceFaceRecognition.stopCamera();
+            }
+
+            const video = document.getElementById('recognitionVideo');
+
+            if (video)
+            {
+                video.style.display = 'none';
+            }
+
+            resetAutoReturnTimer();
+        }
+
+
+        function closeGreeting(scanAgain)
+        {
+            greetingOverlay.style.display = 'none';
+
+            employeeSelect.value = '';
+
+            resetEmployeeSelection();
+
+            const recognitionStatus = document.getElementById('recognitionStatus');
+
+            if (recognitionStatus)
+            {
+                recognitionStatus.textContent =
+                    'Click below to identify yourself automatically.';
+            }
+
+            if (scanAgain)
+            {
+                document.getElementById('startRecognitionButton').click();
+            }
+
+            resetAutoReturnTimer();
+        }
+
+
+        document.getElementById('greetingClose')
+            .addEventListener('click', () => closeGreeting(false));
+
+        document.getElementById('greetingRetry')
+            .addEventListener('click', () => closeGreeting(true));
+
+
+        function applyEmployeeStatus(
             data
         )
         {
 
-           if (data.status === 'not_signed_in')
-{
-    signInButton.disabled = false;
+            /*
+            | Face not set up yet (chosen from the "New employee" list):
+            | no attendance actions until registration is done.
+            */
 
-    goingOutButton.disabled = true;
+            const selectedOption =
+                employeeSelect.options[employeeSelect.selectedIndex];
 
-    returningButton.disabled = true;
+            if (selectedOption && selectedOption.dataset.faceRegistered === '0')
+            {
+                signInButton.disabled = true;
+                goingOutButton.disabled = true;
+                returningButton.disabled = true;
+                signOutButton.disabled = true;
 
-    signOutButton.disabled = true;
-}
+                statusMessage.textContent =
+                    'Register your face below to continue. After that you will be recognised automatically.';
+
+                return;
+            }
+
+
+            if (data.status === 'not_signed_in')
+            {
+                statusMessage.textContent =
+                    'Not signed in yet today.';
+
+                signInButton.disabled = false;
+
+                goingOutButton.disabled = true;
+
+                returningButton.disabled = true;
+
+                signOutButton.disabled = true;
+            }
 
 
             if (
@@ -4006,7 +4179,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'block';
 
         faceRegistrationMessage.textContent =
-            'Your face has not been registered yet.';
+            'Hi ' + employeeName + ', tap below to register your face. Look straight at the camera.';
 
 
         registerMyFaceButton.disabled =
@@ -4570,25 +4743,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /*
             |--------------------------------------------------------------------------
-            | GET 128-VALUE DESCRIPTOR
+            | CAPTURE SEVERAL SAMPLES
             |--------------------------------------------------------------------------
+            | One frame can be blurred or at an angle. Several samples
+            | are averaged on the server into a more reliable face.
             */
 
-            const descriptor =
-                Array.from(
-                    latestFaceDetection.descriptor
-                );
+            faceRegistrationStatus.textContent =
+                '🟡 Hold still… capturing your face.';
 
+            faceRegistrationInstruction.textContent =
+                'Keep looking straight at the camera.';
 
-            if (
-                descriptor.length !== 128
-            ) {
-
-                throw new Error(
-                    'Invalid face descriptor. Please capture your face again.'
-                );
-
-            }
+            const descriptors =
+                await collectRegistrationSamples(5);
 
 
             /*
@@ -4625,8 +4793,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         body: JSON.stringify({
 
-                            face_descriptor:
-                                descriptor
+                            face_descriptors:
+                                descriptors
 
                         })
 
@@ -4715,6 +4883,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 faceRegistrationArea.style.display =
                     'none';
+
+
+                /*
+                | Remove them from the "New employee" list and
+                | load their attendance buttons.
+                */
+
+                onFaceRegistered(currentEmployeeId);
 
 
                 /*
@@ -5039,6 +5215,176 @@ document.addEventListener('DOMContentLoaded', function () {
     | accidentally close the registration.
     |
     */
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COLLECT REGISTRATION SAMPLES
+    |--------------------------------------------------------------------------
+    | Takes `count` good frames (face large, centred and facing the
+    | camera). Gives up after 8 seconds.
+    */
+
+    function isFacingCamera(landmarks) {
+
+        const centre = points => ({
+            x: points.reduce((s, p) => s + p.x, 0) / points.length,
+            y: points.reduce((s, p) => s + p.y, 0) / points.length,
+        });
+
+        const leftEye = centre(landmarks.getLeftEye());
+        const rightEye = centre(landmarks.getRightEye());
+        const noseTip = landmarks.getNose()[3];
+
+        const eyeDistance = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+
+        if (eyeDistance <= 0) {
+            return false;
+        }
+
+        const turn = Math.abs(noseTip.x - (leftEye.x + rightEye.x) / 2) / eyeDistance;
+        const tilt = Math.abs(rightEye.y - leftEye.y) / eyeDistance;
+
+        return turn <= 0.22 && tilt <= 0.25;
+    }
+
+    async function collectRegistrationSamples(count) {
+
+        const samples = [];
+        const deadline = Date.now() + 8000;
+
+        while (samples.length < count && Date.now() < deadline) {
+
+            const detection =
+                await faceapi
+                    .detectSingleFace(
+                        faceRegistrationVideo,
+                        new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.70 })
+                    )
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+            if (detection) {
+
+                const box = detection.detection.box;
+                const w = faceRegistrationVideo.videoWidth;
+                const h = faceRegistrationVideo.videoHeight;
+
+                const largeEnough = box.width / w >= 0.18 && box.height / h >= 0.18;
+                const centred =
+                    Math.abs(box.x + box.width / 2 - w / 2) / w <= 0.20 &&
+                    Math.abs(box.y + box.height / 2 - h / 2) / h <= 0.20;
+
+                if (largeEnough && centred && isFacingCamera(detection.landmarks)) {
+
+                    samples.push(Array.from(detection.descriptor));
+
+                    faceRegistrationStatus.textContent =
+                        '🟡 Capturing… ' + samples.length + ' of ' + count;
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 150));
+        }
+
+        if (samples.length < 3) {
+
+            throw new Error(
+                'Could not get a clear view of your face. Look straight at the camera, hold still and try again.'
+            );
+        }
+
+        return samples;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NEW EMPLOYEE SETUP LIST
+    |--------------------------------------------------------------------------
+    */
+
+    const faceSetup = document.getElementById('faceSetup');
+    const setupSearch = document.getElementById('setupSearch');
+    const setupList = document.getElementById('setupList');
+    const setupEmpty = document.getElementById('setupEmpty');
+    const faceSetupCount = document.getElementById('faceSetupCount');
+
+    function filterSetupList() {
+
+        if (!setupList) {
+            return;
+        }
+
+        const term = (setupSearch ? setupSearch.value : '').trim().toLowerCase();
+        let visible = 0;
+
+        setupList.querySelectorAll('.setup-item').forEach(item => {
+            const show = !term || item.dataset.search.includes(term);
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        if (setupEmpty) {
+            setupEmpty.style.display = visible === 0 ? 'block' : 'none';
+        }
+    }
+
+    if (setupSearch) {
+        setupSearch.addEventListener('input', filterSetupList);
+    }
+
+    if (setupList) {
+
+        setupList.addEventListener('click', function (event) {
+
+            const item = event.target.closest('.setup-item');
+
+            if (!item) {
+                return;
+            }
+
+            setupList.querySelectorAll('.setup-item.selected')
+                .forEach(el => el.classList.remove('selected'));
+
+            item.classList.add('selected');
+
+            employeeSelect.value = item.dataset.id;
+
+            employeeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+            // Register My Face appears just below the list.
+            setTimeout(function () {
+                faceRegistrationArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+        });
+    }
+
+    function onFaceRegistered(employeeId) {
+
+        if (setupList) {
+
+            const item = setupList.querySelector('.setup-item[data-id="' + CSS.escape(String(employeeId)) + '"]');
+
+            if (item) {
+                item.remove();
+            }
+
+            const remaining = setupList.querySelectorAll('.setup-item').length;
+
+            if (faceSetupCount) {
+                faceSetupCount.textContent = remaining;
+            }
+
+            if (remaining === 0 && faceSetup) {
+                faceSetup.style.display = 'none';
+            }
+        }
+
+        // Reload status: the option is now marked as registered,
+        // so the attendance buttons are enabled.
+        employeeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
 
 
     /*

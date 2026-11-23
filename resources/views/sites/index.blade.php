@@ -14,9 +14,13 @@
 
 </head>
 
-<body>
+<body class="admin-ui">
 
-<div class="container py-5">
+<div class="container-fluid px-4 pt-4">
+    @include('partials.admin-nav')
+</div>
+
+<div class="container pb-5">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 

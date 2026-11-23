@@ -3,336 +3,192 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f1f3d">
+    <meta name="description" content="Goodman Fielder Emergency Roll Call">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <link rel="manifest" href="/manifest.json">
 
-    <meta
-        name="theme-color"
-        content="#991b1b"
-    >
+    <title>Emergency Roll Call | Goodman Fielder</title>
 
-    <meta
-        name="description"
-        content="Goodman Fielder Emergency Roll Call"
-    >
-
-    <link
-        rel="manifest"
-        href="/manifest.json"
-    >
-
-    <title>Emergency Roll Call</title>
+    {{-- Everything is inline so the page still renders from the offline cache. --}}
+    @include('partials.kiosk-theme')
 
     <style>
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        /* ==============================
-           HEADER
-        ============================== */
-
-        .header {
-            background: #991b1b;
-            color: white;
-            padding: 24px 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 38px;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            margin: 8px 0 0;
-            font-size: 18px;
-        }
-
-        /* ==============================
-           CONNECTION STATUS
-        ============================== */
+        /* =====================================================
+           CONNECTION STATUS (in the header)
+        ===================================================== */
 
         .connection-status {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
-
-            margin-top: 15px;
-
-            padding: 9px 18px;
-
-            border-radius: 999px;
-
-            font-size: 14px;
-            font-weight: 800;
-
-            background: rgba(255,255,255,0.18);
-            color: white;
+            height: 44px;
+            padding: 0 16px;
+            border-radius: 12px;
+            background: rgba(19, 128, 63, .22);
+            border: 1px solid rgba(110, 231, 160, .45);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            white-space: nowrap;
         }
 
         .connection-dot {
-            width: 11px;
-            height: 11px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #22c55e;
+            background: #4ade80;
+            box-shadow: 0 0 0 4px rgba(74, 222, 128, .25);
         }
 
         .connection-status.offline {
-            background: #7f1d1d;
+            background: rgba(198, 47, 59, .28);
+            border-color: rgba(252, 165, 165, .5);
         }
 
         .connection-status.offline .connection-dot {
             background: #facc15;
+            box-shadow: 0 0 0 4px rgba(250, 204, 21, .25);
         }
 
-        /* ==============================
-           OFFLINE BANNER
-        ============================== */
+        .refresh-btn {
+            height: 44px;
+            min-height: 44px;
+            background: #ffffff;
+            color: var(--navy);
+        }
 
-        .offline-banner {
+        .refresh-btn:hover:not(:disabled) {
+            background: #e8edf6;
+        }
+
+
+        /* =====================================================
+           OFFLINE BANNER + SNAPSHOT MESSAGE
+        ===================================================== */
+
+        .offline-banner,
+        .snapshot-message {
             display: none;
-
-            background: #7f1d1d;
-            color: white;
-
-            padding: 16px 20px;
-
-            text-align: center;
-
-            font-size: 16px;
-            font-weight: 700;
         }
 
-        .offline-banner.show {
-            display: block;
+        .offline-banner.show,
+        .snapshot-message.show {
+            display: flex;
         }
 
         .offline-banner small {
             display: block;
-            margin-top: 5px;
+            margin-top: 3px;
             font-weight: 400;
-            opacity: 0.9;
         }
 
-        /* ==============================
-           CONTAINER
-        ============================== */
 
-        .container {
-            max-width: 1500px;
-            margin: 0 auto;
-            padding: 25px;
-        }
-
-        /* ==============================
-           TOP BAR
-        ============================== */
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            margin-bottom: 20px;
-
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .time {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .refresh-btn {
-            background: #0f172a;
-            color: white;
-
-            border: none;
-
-            padding: 12px 20px;
-
-            border-radius: 8px;
-
-            font-size: 16px;
-            font-weight: 600;
-
-            cursor: pointer;
-        }
-
-        .refresh-btn:hover {
-            background: #1e293b;
-        }
-
-        .refresh-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ==============================
-           SYNC INFORMATION
-        ============================== */
+        /* =====================================================
+           SYNC BAR
+        ===================================================== */
 
         .sync-info {
-            background: white;
-
-            border-radius: 10px;
-
-            padding: 14px 18px;
-
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 24px;
+            padding: 14px 20px;
             margin-bottom: 20px;
-
-            box-shadow:
-                0 3px 12px rgba(0,0,0,0.06);
-
-            color: #475569;
-
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            color: var(--muted);
             font-size: 14px;
+        }
+
+        .sync-info span.item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .sync-info svg {
+            width: 16px;
+            height: 16px;
         }
 
         .sync-info strong {
-            color: #0f172a;
+            color: var(--text);
         }
 
-        /* ==============================
+
+        /* =====================================================
            SUMMARY CARDS
-        ============================== */
+        ===================================================== */
 
         .cards {
             display: grid;
-
-            grid-template-columns:
-                repeat(5, 1fr);
-
-            gap: 18px;
-
-            margin-bottom: 25px;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .card {
-            background: white;
+            --accent: var(--blue);
 
-            border-radius: 12px;
+            position: relative;
+            padding: 20px 22px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
 
-            padding: 25px;
-
-            text-align: center;
-
-            box-shadow:
-                0 3px 12px rgba(0,0,0,0.08);
-
-            border-top: 6px solid;
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 4px;
+            background: var(--accent);
         }
 
         .card .number {
-            font-size: 40px;
-
-            font-weight: 800;
-
-            margin-bottom: 5px;
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
         }
 
         .card .label {
-            font-size: 15px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            color: #475569;
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
         }
 
-        .total-people {
-            border-color: #2563eb;
-        }
+        .total-people  { --accent: var(--blue); }
+        .in-office     { --accent: var(--green); }
+        .out           { --accent: #c2570c; }
+        .visitors-card { --accent: var(--violet); }
+        .not-signed    { --accent: var(--red); }
 
-        .total-people .number {
-            color: #2563eb;
-        }
 
-        .in-office {
-            border-color: #16a34a;
-        }
-
-        .in-office .number {
-            color: #16a34a;
-        }
-
-        .out {
-            border-color: #ea580c;
-        }
-
-        .out .number {
-            color: #ea580c;
-        }
-
-        .visitors-card {
-            border-color: #7c3aed;
-        }
-
-        .visitors-card .number {
-            color: #7c3aed;
-        }
-
-        .not-signed {
-            border-color: #dc2626;
-        }
-
-        .not-signed .number {
-            color: #dc2626;
-        }
-
-        /* ==============================
-           SECTIONS
-        ============================== */
+        /* =====================================================
+           ROLL CALL TABLES
+        ===================================================== */
 
         .roll-call {
-            background: white;
-
-            border-radius: 12px;
-
+            padding: 0;
+            margin-bottom: 24px;
             overflow: hidden;
-
-            box-shadow:
-                0 3px 12px rgba(0,0,0,0.08);
-
-            margin-bottom: 25px;
         }
 
-        .roll-call-header {
+        .roll-call .k-card-head {
             padding: 20px 24px;
-
-            border-bottom:
-                1px solid #e2e8f0;
-        }
-
-        .roll-call-header h2 {
             margin: 0;
-
-            font-size: 24px;
-        }
-
-        .roll-call-header p {
-            margin: 6px 0 0;
-
-            color: #64748b;
-
-            font-size: 14px;
+            border-bottom: 1px solid var(--border);
         }
 
         .table-wrapper {
@@ -341,907 +197,468 @@
 
         table {
             width: 100%;
-
             border-collapse: collapse;
         }
 
         th {
-            background: #0f172a;
-
-            color: white;
-
-            padding: 15px;
-
+            background: #f8fafc;
+            color: var(--muted);
+            padding: 12px 20px;
             text-align: left;
-
-            font-size: 14px;
-
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .05em;
             text-transform: uppercase;
-
             white-space: nowrap;
+            border-bottom: 1px solid var(--border);
         }
 
         td {
-            padding: 15px;
-
-            border-bottom:
-                1px solid #e2e8f0;
-
+            padding: 14px 20px;
+            border-bottom: 1px solid #eef1f5;
             font-size: 15px;
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
         }
 
         tbody tr:hover {
-            background: #f8fafc;
+            background: #fafbfd;
         }
 
         .employee-name,
         .visitor-name {
-            font-weight: 700;
+            font-weight: 600;
         }
 
         .employee-id {
-            color: #64748b;
-
+            margin-top: 2px;
+            color: var(--muted);
             font-size: 13px;
-
-            margin-top: 3px;
         }
 
-        /* ==============================
-           STATUS BADGES
-        ============================== */
-
         .status {
-            display: inline-block;
-
-            padding: 8px 13px;
-
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 11px;
             border-radius: 999px;
-
+            font-size: 12.5px;
             font-weight: 700;
-
-            font-size: 13px;
-
             white-space: nowrap;
         }
 
-        .status-in {
-            background: #dcfce7;
-
-            color: #166534;
+        .status::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
         }
 
-        .status-out {
-            background: #ffedd5;
-
-            color: #9a3412;
-        }
-
-        .status-not {
-            background: #fee2e2;
-
-            color: #991b1b;
-        }
-
-        .status-checkout {
-            background: #e2e8f0;
-
-            color: #475569;
-        }
-
-        .status-visitor {
-            background: #ede9fe;
-
-            color: #6d28d9;
-        }
+        .status-in       { background: var(--green-soft);  color: var(--green); }
+        .status-out      { background: #fdf0e6;            color: #b4530a; }
+        .status-not      { background: var(--red-soft);    color: var(--red); }
+        .status-checkout { background: #eef1f5;            color: #4b5563; }
+        .status-visitor  { background: var(--violet-soft); color: var(--violet); }
 
         .outing-info {
             font-size: 13px;
-
-            color: #9a3412;
-
+            color: #9a4a0b;
             line-height: 1.5;
+        }
+
+        .muted {
+            color: #9aa5b5;
+        }
+
+        .visitor-purpose {
+            max-width: 360px;
         }
 
         .empty {
             text-align: center;
-
-            padding: 40px;
-
-            color: #64748b;
+            padding: 36px 20px;
+            color: var(--muted);
         }
 
-        /* ==============================
-           WARNING
-        ============================== */
+
+        /* =====================================================
+           IMPORTANT NOTICE
+        ===================================================== */
 
         .warning {
-            margin-top: 20px;
-
-            background: #fff7ed;
-
-            border: 1px solid #fed7aa;
-
-            color: #9a3412;
-
-            padding: 15px 18px;
-
-            border-radius: 8px;
-
-            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 400;
         }
 
-        .visitor-purpose {
-            max-width: 350px;
+        .warning p {
+            margin: 0;
         }
 
-        /* ==============================
-           OFFLINE SNAPSHOT MESSAGE
-        ============================== */
+        .warning p + p {
+            margin-top: 8px;
+        }
 
-        .snapshot-message {
+
+        /* =====================================================
+           PRINT: only the roll count sheet
+        ===================================================== */
+
+        .print-sheet {
             display: none;
-
-            background: #fef3c7;
-
-            border: 1px solid #f59e0b;
-
-            color: #92400e;
-
-            padding: 12px 16px;
-
-            border-radius: 8px;
-
-            margin-bottom: 20px;
-
-            font-size: 14px;
-
-            font-weight: 600;
         }
 
-        .snapshot-message.show {
-            display: block;
-        }
+        @media print {
+            @page { size: A4 portrait; margin: 12mm; }
 
-        /* ==============================
-           MOBILE
-        ============================== */
+            body { background: #ffffff !important; }
 
-        @media (max-width: 1200px) {
+            body > *:not(.print-sheet) { display: none !important; }
 
-            .cards {
-                grid-template-columns:
-                    repeat(3, 1fr);
+            .print-sheet { display: block !important; }
+
+            .print-sheet * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
+            .rc-sheet .rc-table tr { break-inside: avoid; }
+        }
+
+
+        @media (max-width: 1200px) {
+            .cards {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
         }
 
         @media (max-width: 800px) {
-
             .cards {
-                grid-template-columns:
-                    repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
-
         }
 
-        @media (max-width: 600px) {
-
+        @media (max-width: 520px) {
             .cards {
                 grid-template-columns: 1fr;
             }
-
-            .header h1 {
-                font-size: 28px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-
-            .card .number {
-                font-size: 36px;
-            }
-
-            .time {
-                font-size: 15px;
-            }
-
         }
 
     </style>
 
 </head>
 
-<body>
+<body class="k-wide">
 
-<!-- =========================================
-     HEADER
-========================================= -->
-
-<div class="header">
-
-    <h1>🚨 EMERGENCY ROLL CALL</h1>
-
-    @if($selectedSite)
-
-        <p>
-            {{ $selectedSite->name }}
-            &nbsp; | &nbsp;
-            Employee &amp; Visitor Accountability &amp; Evacuation Status
-        </p>
-
-    @else
-
-        <p>
-            ALL SITES
-            &nbsp; | &nbsp;
-            Employee &amp; Visitor Accountability &amp; Evacuation Status
-        </p>
-
-    @endif
-
-    <div
-        id="connectionStatus"
-        class="connection-status"
-    >
-
-        <span
-            id="connectionDot"
-            class="connection-dot"
-        ></span>
-
-        <span id="connectionText">
-            CHECKING CONNECTION...
-        </span>
-
-    </div>
-
-</div>
-
-
-<!-- =========================================
-     OFFLINE BANNER
-========================================= -->
-
-<div
-    id="offlineBanner"
-    class="offline-banner"
->
-
-    🔴 OFFLINE EMERGENCY MODE
-
-    <small>
-        No connection to the Attendance System.
-        Showing the latest information saved on this device.
-    </small>
-
-</div>
-
-
-<div class="container">
-
-
-    <!-- =====================================
-         TOP BAR
-    ====================================== -->
-
-    <div class="top-bar">
-
-        <div class="time">
-
-            📅 {{ now()->format('l, d F Y') }}
-
-            &nbsp; | &nbsp;
-
-            🕐
-
-            <span id="currentTime">
-
-                {{ now()->format('h:i:s A') }}
-
-            </span>
-
+    @push('kiosk-hero-actions')
+        <div id="connectionStatus" class="connection-status">
+            <span id="connectionDot" class="connection-dot"></span>
+            <span id="connectionText">CHECKING CONNECTION…</span>
         </div>
 
-
-        <button
-            id="refreshButton"
-            class="refresh-btn"
-            onclick="manualRefresh()"
-        >
-
-            🔄 Refresh Now
-
+        <button id="refreshButton" class="k-btn sm refresh-btn" onclick="manualRefresh()">
+            @include('partials.kiosk-icon', ['name' => 'refresh'])
+            Refresh
         </button>
 
-    </div>
+        <button id="pdfButton" class="k-btn sm refresh-btn" onclick="downloadRollCountPdf()"
+                title="Employees in office and visitors on site, with tick boxes for the roll count">
+            @include('partials.kiosk-icon', ['name' => 'download'])
+            Roll Count PDF
+        </button>
+    @endpush
+
+    @include('partials.kiosk-header', [
+        'variant'  => 'emergency',
+        'title'    => 'Emergency Roll Call',
+        'subtitle' => ($selectedSite ? $selectedSite->name : 'All sites') . ' · Employee & visitor accountability',
+        'icon'     => 'alert',
+    ])
 
 
-    <!-- =====================================
-         LAST SYNC INFORMATION
-    ====================================== -->
+    <main class="k-main">
 
-    <div class="sync-info">
+        {{-- Offline banner --}}
+        <div id="offlineBanner" class="k-alert error offline-banner">
+            @include('partials.kiosk-icon', ['name' => 'wifi'])
+            <div>
+                Offline emergency mode
+                <small>No connection to the Attendance System. Showing the latest information saved on this device.</small>
+            </div>
+        </div>
 
-        <strong>
-            Last Information Update:
-        </strong>
+        {{-- Last sync --}}
+        <div class="sync-info">
+            <span class="item">
+                @include('partials.kiosk-icon', ['name' => 'clock'])
+                <strong>Information as at:</strong>
+                <span id="lastSync">{{ $generatedAt->format('d/m/Y h:i A') }}</span>
+            </span>
+            <span class="item">
+                @include('partials.kiosk-icon', ['name' => 'wifi'])
+                <strong>Data mode:</strong>
+                <span id="dataMode">CHECKING…</span>
+            </span>
+        </div>
 
-        <span id="lastSync">
-            Checking...
-        </span>
-
-        &nbsp;&nbsp;|&nbsp;&nbsp;
-
-        <strong>
-            Data Mode:
-        </strong>
-
-        <span id="dataMode">
-            LIVE
-        </span>
-
-    </div>
-
-
-    <!-- =====================================
-         OFFLINE SNAPSHOT MESSAGE
-    ====================================== -->
-
-    <div
-        id="snapshotMessage"
-        class="snapshot-message"
-    >
-
-        💾 The latest Emergency Roll Call information was saved on
-        this device before the network connection was lost.
-
-    </div>
+        {{-- Offline snapshot message --}}
+        <div id="snapshotMessage" class="k-alert warning snapshot-message">
+            @include('partials.kiosk-icon', ['name' => 'info'])
+            <div>
+                Showing the information saved on this device at
+                <strong>{{ $generatedAt->format('d/m/Y h:i A') }}</strong>.
+                People may have signed in or out since then. "Roll Count PDF" will open the print screen;
+                choose <strong>Save as PDF</strong> or a printer.
+            </div>
+        </div>
 
 
-    <!-- =====================================
-         SUMMARY CARDS
-    ===================================== -->
+        {{-- Summary --}}
+        <div class="cards">
 
-    <div class="cards">
-
-
-        <div class="card total-people">
-
-            <div class="number">
-                {{ $peopleOnSite }}
+            <div class="card total-people">
+                <div class="number">{{ $peopleOnSite }}</div>
+                <div class="label">People on site</div>
             </div>
 
-            <div class="label">
-                People On Site
+            <div class="card in-office">
+                <div class="number">{{ $inOffice }}</div>
+                <div class="label">Employees in office</div>
+            </div>
+
+            <div class="card out">
+                <div class="number">{{ $currentlyOut }}</div>
+                <div class="label">Employees currently out</div>
+            </div>
+
+            <div class="card visitors-card">
+                <div class="number">{{ $visitorsOnSite }}</div>
+                <div class="label">Visitors on site</div>
+            </div>
+
+            <div class="card not-signed">
+                <div class="number">{{ $notSignedIn }}</div>
+                <div class="label">Employees not signed in</div>
             </div>
 
         </div>
 
 
-        <div class="card in-office">
+        {{-- Employee roll call --}}
+        <section class="k-card roll-call">
 
-            <div class="number">
-                {{ $inOffice }}
+            <div class="k-card-head">
+                <div class="k-card-icon">@include('partials.kiosk-icon', ['name' => 'users'])</div>
+                <div>
+                    <h2>Employee Roll Call</h2>
+                    <p>Current employee attendance and location status.</p>
+                </div>
             </div>
 
-            <div class="label">
-                Employees In Office
-            </div>
-
-        </div>
-
-
-        <div class="card out">
-
-            <div class="number">
-                {{ $currentlyOut }}
-            </div>
-
-            <div class="label">
-                Employees Currently Out
-            </div>
-
-        </div>
-
-
-        <div class="card visitors-card">
-
-            <div class="number">
-                {{ $visitorsOnSite }}
-            </div>
-
-            <div class="label">
-                Visitors On Site
-            </div>
-
-        </div>
-
-
-        <div class="card not-signed">
-
-            <div class="number">
-                {{ $notSignedIn }}
-            </div>
-
-            <div class="label">
-                Employees Not Signed In
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================
-         EMPLOYEE ROLL CALL
-    ====================================== -->
-
-    <div class="roll-call">
-
-        <div class="roll-call-header">
-
-            <h2>
-                👨‍💼 Employee Roll Call
-            </h2>
-
-            <p>
-                Current employee attendance and location status.
-            </p>
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Employee
-                        </th>
-
-                        <th>
-                            Department
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Check In
-                        </th>
-
-                        <th>
-                            Check Out
-                        </th>
-
-                        <th>
-                            Outing Information
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                @forelse($rollCall as $person)
-
-                    <tr>
-
-                        <td>
-
-                            <div class="employee-name">
-
-                                {{ $person->employee->name }}
-
-                            </div>
-
-                            <div class="employee-id">
-
-                                ID:
-                                {{ $person->employee->employee_code }}
-
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            {{ $person->employee->department ?: '—' }}
-
-                        </td>
-
-
-                        <td>
-
-                            @if($person->status === 'in_office')
-
-                                <span
-                                    class="status status-in"
-                                >
-                                    ✓ IN OFFICE
-                                </span>
-
-                            @elseif($person->status === 'out')
-
-                                <span
-                                    class="status status-out"
-                                >
-                                    ⚠ CURRENTLY OUT
-                                </span>
-
-                            @elseif($person->status === 'not_signed_in')
-
-                                <span
-                                    class="status status-not"
-                                >
-                                    ✕ NOT SIGNED IN
-                                </span>
-
-                            @elseif($person->status === 'checked_out')
-
-                                <span
-                                    class="status status-checkout"
-                                >
-                                    ✓ CHECKED OUT
-                                </span>
-
-                            @endif
-
-                        </td>
-
-
-                        <td>
-
-                            @if($person->check_in)
-
-                                {{ \Carbon\Carbon::parse($person->check_in)->format('h:i A') }}
-
-                            @else
-
-                                —
-
-                            @endif
-
-                        </td>
-
-
-                        <td>
-
-                            @if($person->check_out)
-
-                                {{ \Carbon\Carbon::parse($person->check_out)->format('h:i A') }}
-
-                            @else
-
-                                —
-
-                            @endif
-
-                        </td>
-
-
-                        <td>
-
-                            @if($person->active_outing)
-
-                                <div class="outing-info">
-
-                                    <strong>
-                                        Currently Out
-                                    </strong>
-
-                                    <br>
-
-                                    Out:
-
-                                    {{ \Carbon\Carbon::parse($person->active_outing->out_time)->format('h:i A') }}
-
-                                    @if($person->active_outing->reason)
-
-                                        <br>
-
-                                        Reason:
-
-                                        {{ $person->active_outing->reason }}
-
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Check in</th>
+                            <th>Check out</th>
+                            <th>Outing information</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($rollCall as $person)
+                            <tr>
+                                <td>
+                                    <div class="employee-name">{{ $person->employee->name }}</div>
+                                    <div class="employee-id">ID: {{ $person->employee->employee_code }}</div>
+                                </td>
+
+                                <td>{{ $person->employee->department ?: '—' }}</td>
+
+                                <td>
+                                    @if ($person->status === 'in_office')
+                                        <span class="status status-in">In office</span>
+                                    @elseif ($person->status === 'out')
+                                        <span class="status status-out">Currently out</span>
+                                    @elseif ($person->status === 'not_signed_in')
+                                        <span class="status status-not">Not signed in</span>
+                                    @elseif ($person->status === 'checked_out')
+                                        <span class="status status-checkout">Checked out</span>
                                     @endif
+                                </td>
 
-                                </div>
+                                <td>
+                                    @if ($person->check_in)
+                                        {{ \Carbon\Carbon::parse($person->check_in)->format('h:i A') }}
+                                    @else
+                                        <span class="muted">—</span>
+                                    @endif
+                                </td>
 
-                            @else
+                                <td>
+                                    @if ($person->check_out)
+                                        {{ \Carbon\Carbon::parse($person->check_out)->format('h:i A') }}
+                                    @else
+                                        <span class="muted">—</span>
+                                    @endif
+                                </td>
 
-                                —
+                                <td>
+                                    @if ($person->active_outing)
+                                        <div class="outing-info">
+                                            <strong>Out since {{ \Carbon\Carbon::parse($person->active_outing->out_time)->format('h:i A') }}</strong>
+                                            @if ($person->active_outing->reason)
+                                                <br>{{ $person->active_outing->reason }}
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="muted">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="empty">No active employees found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-                            @endif
+        </section>
 
-                        </td>
 
-                    </tr>
+        {{-- Visitor roll call --}}
+        <section class="k-card roll-call">
 
-                @empty
+            <div class="k-card-head">
+                <div class="k-card-icon violet">@include('partials.kiosk-icon', ['name' => 'badge'])</div>
+                <div>
+                    <h2>Visitor Roll Call</h2>
+                    <p>Visitors currently signed in and expected to be on site.</p>
+                </div>
+            </div>
 
-                    <tr>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Visitor</th>
+                            <th>Company</th>
+                            <th>Purpose of visit</th>
+                            <th>Sign in</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($visitors as $visitor)
+                            <tr>
+                                <td><div class="visitor-name">{{ $visitor->name }}</div></td>
+                                <td>{{ $visitor->company ?: '—' }}</td>
+                                <td class="visitor-purpose">{{ $visitor->purpose }}</td>
+                                <td>
+                                    @if ($visitor->sign_in)
+                                        {{ $visitor->sign_in->format('h:i A') }}
+                                    @else
+                                        <span class="muted">—</span>
+                                    @endif
+                                </td>
+                                <td><span class="status status-visitor">On site</span></td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="empty">No visitors currently on site.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-                        <td
-                            colspan="6"
-                            class="empty"
-                        >
+        </section>
 
-                            No active employees found.
 
-                        </td>
-
-                    </tr>
-
-                @endforelse
-
-                </tbody>
-
-            </table>
-
+        {{-- Important notice --}}
+        <div class="k-alert warning warning">
+            @include('partials.kiosk-icon', ['name' => 'alert'])
+            <div>
+                <p>
+                    <strong>Important:</strong>
+                    This roll call is based on the attendance and visitor records in the system.
+                    During an emergency, physically verify each employee's and visitor's location.
+                    Employees who have not signed in may not necessarily be absent, and visitors shown
+                    above may have left without signing out.
+                </p>
+                <p>
+                    <strong>Offline mode:</strong>
+                    If this device loses its network connection, the information shown is the latest
+                    information successfully synchronised before the connection was lost.
+                </p>
+            </div>
         </div>
 
+    </main>
+
+
+    {{-- Printable roll count sheet. Hidden on screen; used by "Roll Count PDF"
+         when the server cannot be reached (it is part of the offline copy). --}}
+    <div class="print-sheet" aria-hidden="true">
+        @include('attendance.partials.roll-count-sheet')
     </div>
-
-
-    <!-- =====================================
-         VISITOR ROLL CALL
-    ====================================== -->
-
-    <div class="roll-call">
-
-        <div class="roll-call-header">
-
-            <h2>
-                👥 Visitor Roll Call
-            </h2>
-
-            <p>
-                Visitors currently signed in and physically expected
-                to be on site.
-            </p>
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Visitor
-                        </th>
-
-                        <th>
-                            Company
-                        </th>
-
-                        <th>
-                            Purpose of Visit
-                        </th>
-
-                        <th>
-                            Sign In
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                @forelse($visitors as $visitor)
-
-                    <tr>
-
-                        <td>
-
-                            <div class="visitor-name">
-
-                                {{ $visitor->name }}
-
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            {{ $visitor->company ?: '—' }}
-
-                        </td>
-
-
-                        <td class="visitor-purpose">
-
-                            {{ $visitor->purpose }}
-
-                        </td>
-
-
-                        <td>
-
-                            @if($visitor->sign_in)
-
-                                {{ $visitor->sign_in->format('h:i A') }}
-
-                            @else
-
-                                —
-
-                            @endif
-
-                        </td>
-
-
-                        <td>
-
-                            <span
-                                class="status status-visitor"
-                            >
-
-                                ✓ VISITOR ON SITE
-
-                            </span>
-
-                        </td>
-
-                    </tr>
-
-                @empty
-
-                    <tr>
-
-                        <td
-                            colspan="5"
-                            class="empty"
-                        >
-
-                            <div style="font-size: 40px;">
-                                👤
-                            </div>
-
-                            No visitors currently on site.
-
-                        </td>
-
-                    </tr>
-
-                @endforelse
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================
-         WARNING
-    ====================================== -->
-
-    <div class="warning">
-
-        <strong>
-            Important:
-        </strong>
-
-        This roll call is based on the attendance and visitor records
-        in the system.
-
-        During an emergency, physically verify each employee and visitor's
-        location.
-
-        Employees who have not signed in may not necessarily be absent.
-
-        Visitors shown above have signed in but may have already left the
-        premises without signing out.
-
-        <br><br>
-
-        <strong>
-            Offline Mode:
-        </strong>
-
-        If this device is disconnected from the network, the information
-        displayed is the latest information successfully synchronized
-        before the connection was lost.
-
-    </div>
-
-
-</div>
 
 
 <script>
 
     /* ============================================================
        EMERGENCY PAGE SETTINGS
+
+       - The page loads fresh data each time it is opened (no timed
+         auto-refresh). The service worker keeps the last copy for
+         offline use.
+       - "Online" means the Attendance System server answered, not
+         just that the device has Wi-Fi.
     ============================================================ */
 
-    const EMERGENCY_STORAGE_KEY =
-        'gfi_emergency_last_sync';
+    const DATA_GENERATED_AT = {{ $generatedAt->getTimestamp() * 1000 }};
+    // Relative paths so the saved offline copy works whichever address
+    // (IP, hostname, http or https) the tablet used to open it.
+    const HEALTH_URL = '/up';
+    const PDF_URL = '/attendance/emergency/pdf';
+    const STALE_AFTER_MS = 60 * 1000;
+    const RELOAD_GUARD_KEY = 'gfi_emergency_reloaded_at';
 
-    const EMERGENCY_CACHE_NAME =
-        'gfi-emergency-v4';
-
-    const EMERGENCY_URL =
-        '/attendance/emergency';
+    let serverOnline = null;
 
 
     /* ============================================================
-       CURRENT TIME
+       SERVER CHECK
     ============================================================ */
 
-    function updateClock() {
+    async function checkServer() {
 
-        const now = new Date();
-
-        let hours = now.getHours();
-
-        let minutes = now.getMinutes();
-
-        let seconds = now.getSeconds();
-
-        const ampm =
-            hours >= 12
-                ? 'PM'
-                : 'AM';
-
-        hours = hours % 12;
-
-        if (hours === 0) {
-            hours = 12;
+        if (!navigator.onLine) {
+            return false;
         }
 
-        hours =
-            String(hours).padStart(2, '0');
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, 5000);
 
-        minutes =
-            String(minutes).padStart(2, '0');
-
-        seconds =
-            String(seconds).padStart(2, '0');
-
-        const clock =
-            document.getElementById('currentTime');
-
-        if (clock) {
-
-            clock.textContent =
-                `${hours}:${minutes}:${seconds} ${ampm}`;
-
+        try {
+            const response = await fetch(HEALTH_URL + '?t=' + Date.now(), {
+                cache: 'no-store',
+                signal: controller.signal,
+            });
+            return response.ok;
+        } catch (error) {
+            return false;
+        } finally {
+            clearTimeout(timer);
         }
-
     }
-
-    updateClock();
-
-    setInterval(
-        updateClock,
-        1000
-    );
 
 
     /* ============================================================
@@ -1250,310 +667,166 @@
 
     function setOnlineStatus(isOnline) {
 
-        const status =
-            document.getElementById('connectionStatus');
+        serverOnline = isOnline;
 
-        const text =
-            document.getElementById('connectionText');
-
-        const banner =
-            document.getElementById('offlineBanner');
-
-        const mode =
-            document.getElementById('dataMode');
-
-        const refreshButton =
-            document.getElementById('refreshButton');
-
-        const snapshotMessage =
-            document.getElementById('snapshotMessage');
-
+        const status = document.getElementById('connectionStatus');
+        const text = document.getElementById('connectionText');
+        const banner = document.getElementById('offlineBanner');
+        const mode = document.getElementById('dataMode');
+        const snapshotMessage = document.getElementById('snapshotMessage');
 
         if (isOnline) {
-
             status.classList.remove('offline');
-
-            text.textContent =
-                'LIVE — CONNECTED';
-
+            text.textContent = 'LIVE — CONNECTED';
             banner.classList.remove('show');
-
-            mode.textContent =
-                'LIVE';
-
-            refreshButton.disabled =
-                false;
-
+            mode.textContent = 'LIVE';
             snapshotMessage.classList.remove('show');
-
         } else {
-
             status.classList.add('offline');
-
-            text.textContent =
-                'OFFLINE — SAVED DATA';
-
+            text.textContent = 'OFFLINE — SAVED DATA';
             banner.classList.add('show');
-
-            mode.textContent =
-                'OFFLINE';
-
-            refreshButton.disabled =
-                true;
-
+            mode.textContent = 'OFFLINE (saved on this device)';
             snapshotMessage.classList.add('show');
-
         }
-
     }
 
 
     /* ============================================================
-       LAST SYNC
+       RELOAD FOR FRESH DATA
+       Guarded so a failing server can never cause a reload loop.
     ============================================================ */
 
-    function updateLastSync() {
-
-        const lastSync =
-            localStorage.getItem(
-                EMERGENCY_STORAGE_KEY
-            );
-
-        const element =
-            document.getElementById('lastSync');
-
-
-        if (!element) {
-            return;
-        }
-
-
-        if (lastSync) {
-
-            const date =
-                new Date(lastSync);
-
-            if (!isNaN(date.getTime())) {
-
-                element.textContent =
-                    date.toLocaleString();
-
-            } else {
-
-                element.textContent =
-                    'Saved information available';
-
-            }
-
-        } else {
-
-            element.textContent =
-                'No previous synchronization recorded';
-
-        }
-
+    function dataIsStale() {
+        return Date.now() - DATA_GENERATED_AT > STALE_AFTER_MS;
     }
 
+    function reloadForFreshData() {
 
-    /* ============================================================
-       SAVE SUCCESSFUL ONLINE SYNCHRONIZATION
-    ============================================================ */
-
-    function recordSync() {
+        let last = 0;
 
         try {
+            last = parseInt(sessionStorage.getItem(RELOAD_GUARD_KEY) || '0', 10);
+        } catch (error) {}
 
-            localStorage.setItem(
-                EMERGENCY_STORAGE_KEY,
-                new Date().toISOString()
-            );
-
-        } catch (error) {
-
-            console.error(
-                'Unable to save synchronization time:',
-                error
-            );
-
-        }
-
-        updateLastSync();
-
-    }
-
-
-    /* ============================================================
-       MANUAL REFRESH
-    ============================================================ */
-
-    function manualRefresh() {
-
-        if (!navigator.onLine) {
-
-            alert(
-                'OFFLINE MODE\n\nThe network connection is unavailable.\n\nThe latest Emergency Roll Call information saved on this device is being displayed.'
-            );
-
+        if (Date.now() - last < 15000) {
             return;
-
         }
+
+        try {
+            sessionStorage.setItem(RELOAD_GUARD_KEY, String(Date.now()));
+        } catch (error) {}
 
         window.location.reload();
+    }
 
+    async function refreshStatus(reloadIfStale) {
+
+        const online = await checkServer();
+
+        setOnlineStatus(online);
+
+        if (online && reloadIfStale && dataIsStale()) {
+            reloadForFreshData();
+        }
     }
 
 
     /* ============================================================
-       NETWORK ONLINE
+       BUTTONS
     ============================================================ */
 
-    window.addEventListener(
-        'online',
-        function () {
+    async function manualRefresh() {
 
-            setOnlineStatus(true);
+        const button = document.getElementById('refreshButton');
+        button.disabled = true;
 
-            /*
-             * Give the network a moment to reconnect.
-             */
-            setTimeout(
-                function () {
+        const online = await checkServer();
+        setOnlineStatus(online);
 
-                    window.location.reload();
-
-                },
-                1500
-            );
-
+        if (online) {
+            window.location.reload();
+            return;
         }
-    );
 
+        button.disabled = false;
+        alert('OFFLINE MODE\n\nThe Attendance System cannot be reached.\n\nThe Emergency Roll Call information saved on this device is being displayed.');
+    }
 
-    /* ============================================================
-       NETWORK OFFLINE
-    ============================================================ */
+    async function downloadRollCountPdf() {
 
-    window.addEventListener(
-        'offline',
-        function () {
+        const button = document.getElementById('pdfButton');
+        button.disabled = true;
 
-            setOnlineStatus(false);
+        const online = await checkServer();
+        setOnlineStatus(online);
+        button.disabled = false;
 
+        if (online) {
+            // Fresh PDF generated by the server (downloads; page stays open).
+            window.location.href = PDF_URL;
+            return;
         }
-    );
 
-
-    /* ============================================================
-       INITIAL CONNECTION STATUS
-    ============================================================ */
-
-    setOnlineStatus(
-        navigator.onLine
-    );
-
-    updateLastSync();
-
-
-    /* ============================================================
-       RECORD ONLINE LOAD
-    ============================================================ */
-
-    if (navigator.onLine) {
-
-        recordSync();
-
+        // Offline: print the saved roll count sheet (choose "Save as PDF").
+        window.print();
     }
 
 
     /* ============================================================
-       SERVICE WORKER REGISTRATION
+       EVENTS
+    ============================================================ */
+
+    // Opened again with the Back button (page restored from memory).
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            refreshStatus(true);
+        }
+    });
+
+    // Tablet woken up / tab brought back to the front.
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            refreshStatus(true);
+        }
+    });
+
+    // Connection restored: load the latest information.
+    window.addEventListener('online', function () {
+        setTimeout(function () { refreshStatus(true); }, 1500);
+    });
+
+    window.addEventListener('offline', function () {
+        setOnlineStatus(false);
+    });
+
+
+    /* ============================================================
+       INITIAL STATE
+       If this copy came from the offline cache but the server is
+       reachable again, load the latest information.
+    ============================================================ */
+
+    refreshStatus(true);
+
+
+    /* ============================================================
+       SERVICE WORKER REGISTRATION (offline copy)
     ============================================================ */
 
     if ('serviceWorker' in navigator) {
 
-        window.addEventListener(
-            'load',
-            function () {
+        window.addEventListener('load', function () {
 
-                navigator.serviceWorker
-    .register('/sw.js')
-                    .then(
-                        function (registration) {
-
-                            console.log(
-                                'GFI Emergency Service Worker registered.',
-                                registration.scope
-                            );
-
-                            /*
-                             * Check for a newer service worker.
-                             */
-                            registration.update();
-
-                        }
-                    )
-                    .catch(
-                        function (error) {
-
-                            console.error(
-                                'Service worker registration failed:',
-                                error
-                            );
-
-                        }
-                    );
-
-            }
-        );
-
+            navigator.serviceWorker
+                .register('/sw.js')
+                .then(function (registration) {
+                    registration.update();
+                })
+                .catch(function (error) {
+                    console.error('Service worker registration failed:', error);
+                });
+        });
     }
-
-
-    /* ============================================================
-       ONLINE AUTO REFRESH
-       
-       Every 10 seconds while connected.
-       
-       IMPORTANT:
-       It does NOT refresh while offline.
-       ============================================================ */
-
-    setInterval(
-        function () {
-
-            if (navigator.onLine) {
-
-                window.location.reload();
-
-            }
-
-        },
-        10000
-    );
-
-
-    /* ============================================================
-       PAGE VISIBILITY
-       
-       When tablet screen wakes up, check connection again.
-       ============================================================ */
-
-    document.addEventListener(
-        'visibilitychange',
-        function () {
-
-            if (!document.hidden) {
-
-                setOnlineStatus(
-                    navigator.onLine
-                );
-
-                updateLastSync();
-
-            }
-
-        }
-    );
 
 </script>
 

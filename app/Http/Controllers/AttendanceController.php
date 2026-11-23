@@ -9,6 +9,7 @@ use App\Models\Visitor;
 use App\Models\Site;
 use App\Exports\AttendanceHistoryExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\FaceMatcher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -526,6 +527,10 @@ class AttendanceController extends Controller
 
 public function signIn(Request $request)
 {
+    if (! $this->consumeFaceVerification($request, $request->input('employee_id'))) {
+        return $this->faceNotVerifiedResponse();
+    }
+
     $request->validate([
         'employee_id' =>
             'required|exists:employees,id',
@@ -630,6 +635,10 @@ public function signIn(Request $request)
 
     public function signOut(Request $request)
     {
+        if (! $this->consumeFaceVerification($request, $request->input('employee_id'))) {
+            return $this->faceNotVerifiedResponse();
+        }
+
         $request->validate([
             'employee_id' =>
                 'required|exists:employees,id',
@@ -725,6 +734,10 @@ public function signIn(Request $request)
 
     public function goingOut(Request $request)
     {
+        if (! $this->consumeFaceVerification($request, $request->input('employee_id'))) {
+            return $this->faceNotVerifiedResponse();
+        }
+
         /*
         | Reason is compulsory.
         | Destination is no longer required because
@@ -853,6 +866,10 @@ public function signIn(Request $request)
 
     public function returning(Request $request)
     {
+        if (! $this->consumeFaceVerification($request, $request->input('employee_id'))) {
+            return $this->faceNotVerifiedResponse();
+        }
+
         $request->validate([
             'employee_id' =>
                 'required|exists:employees,id',
@@ -1000,6 +1017,42 @@ public function signIn(Request $request)
     */
 
     public function emergency()
+    {
+        // no-store: every open of the page fetches fresh data from the server.
+        // The service worker still keeps its own copy for offline use.
+        return response()
+            ->view('attendance.emergency', $this->emergencyData())
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMERGENCY ROLL COUNT PDF
+    |--------------------------------------------------------------------------
+    |
+    | Employees in the office and visitors on site, with a tick box per
+    | person for the warden's roll count.
+    |
+    */
+
+    public function emergencyPdf()
+    {
+        $data = $this->emergencyData();
+
+        $pdf = Pdf::loadView('attendance.pdf.emergency', $data)
+            ->setOption('enable_font_subsetting', true)
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'emergency-roll-count-' .
+            $data['generatedAt']->format('Y-m-d-His') .
+            '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+
+    private function emergencyData(): array
     {
         $today = Carbon::today();
 
@@ -1244,19 +1297,24 @@ public function signIn(Request $request)
             $visitorsOnSite;
 
 
-        return view(
-            'attendance.emergency',
-            compact(
-                'rollCall',
-                'inOffice',
-                'currentlyOut',
-                'notSignedIn',
-                'checkedOut',
-                'visitors',
-                'visitorsOnSite',
-                'peopleOnSite',
-                'selectedSite'
-            )
+        $inOfficeList = $rollCall
+            ->where('status', 'in_office')
+            ->values();
+
+        $generatedAt = now();
+
+        return compact(
+            'rollCall',
+            'inOffice',
+            'inOfficeList',
+            'currentlyOut',
+            'notSignedIn',
+            'checkedOut',
+            'visitors',
+            'visitorsOnSite',
+            'peopleOnSite',
+            'selectedSite',
+            'generatedAt'
         );
     }
 
@@ -1804,135 +1862,46 @@ public function signIn(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    public function recognizeFace(Request $request)
+    public function recognizeFace(Request $request, FaceMatcher $matcher)
     {
-        $validated = $request->validate([
-            'face_descriptor' => [
-                'required',
-                'array',
-                'size:128',
-            ],
-            'face_descriptor.*' => [
-                'required',
-                'numeric',
-            ],
-        ]);
+        $validated = $request->validate(FaceMatcher::rules());
 
-        $input = array_map(
-            'floatval',
-            $validated['face_descriptor']
-        );
+        $samples = FaceMatcher::samplesFromRequest($validated);
 
-        $employees = Employee::query()
-            ->whereNotNull('face_descriptor')
-            ->whereRaw('LOWER(status) = ?', ['active'])
-            ->get([
-                'id',
-                'employee_code',
-                'name',
-                'face_descriptor',
-            ]);
+        $known = $matcher->knownFaces();
 
-        $best = null;
-        $secondBest = null;
-
-        foreach ($employees as $employee) {
-
-            $stored = json_decode(
-                $employee->face_descriptor,
-                true
-            );
-
-            if (!is_array($stored) || count($stored) !== 128) {
-                continue;
-            }
-
-            $distance = 0.0;
-
-            for ($i = 0; $i < 128; $i++) {
-
-                $diff =
-                    $input[$i] -
-                    (float) $stored[$i];
-
-                $distance += $diff * $diff;
-            }
-
-            $distance = sqrt($distance);
-
-            if (
-                $best === null ||
-                $distance < $best['distance']
-            ) {
-
-                $secondBest = $best;
-
-                $best = [
-                    'employee' => $employee,
-                    'distance' => $distance,
-                ];
-
-            } elseif (
-                $secondBest === null ||
-                $distance < $secondBest['distance']
-            ) {
-
-                $secondBest = [
-                    'employee' => $employee,
-                    'distance' => $distance,
-                ];
-            }
-        }
-
-        $threshold = 0.50;
-        $minMargin = 0.04;
-
-        if (!$best) {
+        if ($known->isEmpty()) {
 
             return response()->json([
                 'matched' => false,
-                'message' =>
-                    'No employees have registered faces.',
+                'message' => 'No employees have registered faces.',
             ]);
         }
 
-        $ambiguous =
-            $secondBest &&
-            (
-                ($secondBest['distance'] - $best['distance'])
-                < $minMargin
-            );
+        $match = $matcher->identify($samples, $known);
 
-        if (
-            $best['distance'] > $threshold ||
-            $ambiguous
-        ) {
+        if (! $match) {
+
+            $this->clearFaceVerification($request);
 
             return response()->json([
                 'matched' => false,
-                'message' =>
-                    'No matching employee found.',
+                'message' => 'Face not recognised. Look straight at the camera and hold still.',
             ]);
         }
+
+        $this->markFaceVerified($request, $match['employee']->id);
 
         return response()->json([
             'matched' => true,
 
             'employee' => [
-                'id' =>
-                    $best['employee']->id,
-
-                'name' =>
-                    $best['employee']->name,
-
-                'employee_code' =>
-                    $best['employee']->employee_code,
+                'id' => $match['employee']->id,
+                'name' => $match['employee']->name,
+                'employee_code' => $match['employee']->employee_code,
             ],
 
-            'distance' => round(
-                $best['distance'],
-                4
-            ),
+            'distance' => round($match['distance'], 4),
         ]);
     }
 
@@ -1944,48 +1913,27 @@ public function signIn(Request $request)
     |
     | Employees can register their face only once.
     | Once a face_descriptor exists, only an administrator can change it.
+    | Several camera samples are averaged into one descriptor, and a face
+    | that already belongs to another employee is refused.
     |
     */
 
     public function registerFaceFirstTime(
         Request $request,
-        Employee $employee
+        Employee $employee,
+        FaceMatcher $matcher
     ) {
-        $validated = $request->validate([
-            'face_descriptor' => [
-                'required',
-                'array',
-                'size:128',
-            ],
-
-            'face_descriptor.*' => [
-                'required',
-                'numeric',
-            ],
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | EMPLOYEE MUST BE ACTIVE
-        |--------------------------------------------------------------------------
-        */
+        $validated = $request->validate(FaceMatcher::rules(10));
 
         if (strtolower($employee->status) !== 'active') {
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                    'This employee is not active.',
+                'message' => 'This employee is not active.',
             ], 403);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FACE CAN ONLY BE REGISTERED ONCE
-        |--------------------------------------------------------------------------
-        */
-
-        if (!empty($employee->face_descriptor)) {
+        if (! empty($employee->face_descriptor)) {
 
             return response()->json([
                 'success' => false,
@@ -1995,20 +1943,36 @@ public function signIn(Request $request)
             ], 403);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | SAVE FACE DESCRIPTOR
-        |--------------------------------------------------------------------------
-        */
-
-        $employee->face_descriptor = json_encode(
-            array_map(
-                'floatval',
-                $validated['face_descriptor']
-            )
+        $descriptor = $matcher->averageSamples(
+            FaceMatcher::samplesFromRequest($validated)
         );
 
+        if (! $descriptor) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'The camera images did not match each other. Please hold still and try again.',
+            ], 422);
+        }
+
+        $duplicate = $matcher->findDuplicate($descriptor, $employee->id);
+
+        if ($duplicate) {
+
+            return response()->json([
+                'success' => false,
+                'message' =>
+                    'This face is already registered to another employee. ' .
+                    'Please see an administrator.',
+            ], 409);
+        }
+
+        $employee->face_descriptor = json_encode($descriptor);
+        $employee->face_registered_at = now();
         $employee->save();
+
+        // They have just shown their face, so let them sign in straight away.
+        $this->markFaceVerified($request, $employee->id);
 
         return response()->json([
             'success' => true,
@@ -2016,5 +1980,52 @@ public function signIn(Request $request)
                 'Face registered successfully. ' .
                 'Future face changes must be made by an administrator.',
         ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FACE VERIFICATION FOR KIOSK ACTIONS
+    |--------------------------------------------------------------------------
+    |
+    | Sign in / going out / returning / sign out are only accepted for the
+    | employee whose face was recognised on this device in the last few
+    | minutes. Each recognition allows one action.
+    |
+    */
+
+    private const FACE_VERIFIED_SECONDS = 180;
+
+    private function markFaceVerified(Request $request, int $employeeId): void
+    {
+        $request->session()->put('face_verified', [
+            'employee_id' => $employeeId,
+            'at' => now()->getTimestamp(),
+        ]);
+    }
+
+    private function clearFaceVerification(Request $request): void
+    {
+        $request->session()->forget('face_verified');
+    }
+
+    /**
+     * True if this employee was face-verified recently. The verification is
+     * used up, so the next action needs a new recognition.
+     */
+    private function consumeFaceVerification(Request $request, $employeeId): bool
+    {
+        $verified = $request->session()->pull('face_verified');
+
+        return is_array($verified)
+            && (int) ($verified['employee_id'] ?? 0) === (int) $employeeId
+            && now()->getTimestamp() - (int) ($verified['at'] ?? 0) <= self::FACE_VERIFIED_SECONDS;
+    }
+
+    private function faceNotVerifiedResponse()
+    {
+        return redirect()
+            ->route('attendance.employee')
+            ->with('error', 'Please identify yourself with face recognition first, then try again.');
     }
 }

@@ -62,23 +62,27 @@ class AdminUserController extends Controller
                 'confirmed',
                 'min:8',
             ],
+
+            'role' => [
+                'required',
+                'in:user,admin',
+            ],
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | Create administrator
+        | Create the account with the chosen role
         |--------------------------------------------------------------------------
-        |
-        | is_admin is explicitly set to true here.
-        |
         */
+
+        $isAdmin = $validated['role'] === 'admin';
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'is_admin' => true,
+            'is_admin' => $isAdmin,
         ]);
 
 
@@ -86,7 +90,7 @@ class AdminUserController extends Controller
             ->route('admin-users.index')
             ->with(
                 'success',
-                'Administrator account created successfully.'
+                ($isAdmin ? 'Admin' : 'User') . ' account created successfully.'
             );
     }
 
@@ -136,18 +140,33 @@ public function update(Request $request, User $user)
             'min:8',
         ],
 
-        'is_admin' => [
-            'nullable',
-            'boolean',
+        'role' => [
+            'required',
+            'in:user,admin',
         ],
     ]);
+
+    $makeAdmin = $validated['role'] === 'admin';
+
+    // Guard against locking everyone out of user management.
+    if ($user->is_admin && ! $makeAdmin) {
+        if ($user->id === auth()->id()) {
+            return back()->withInput()->withErrors([
+                'role' => 'You cannot remove your own admin access. Ask another admin to do it.',
+            ]);
+        }
+
+        if (User::where('is_admin', true)->count() <= 1) {
+            return back()->withInput()->withErrors([
+                'role' => 'This is the last admin account, so it must stay an admin.',
+            ]);
+        }
+    }
 
     // Update basic account details.
     $user->name = $validated['name'];
     $user->email = $validated['email'];
-
-    // Save administrator permission from the checkbox.
-    $user->is_admin = $request->boolean('is_admin');
+    $user->is_admin = $makeAdmin;
 
     // Only change the password if a new one was entered.
     if (!empty($validated['password'])) {

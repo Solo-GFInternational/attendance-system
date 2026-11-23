@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Users | Attendance Management System</title>
+    <title>Users | Attendance Management System</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -94,117 +94,11 @@
 </head>
 
 
-<body>
+<body class="admin-ui">
 
 <div class="container-fluid px-4 py-4">
 
-
-    {{-- NAVIGATION --}}
-
-    <div class="navbar-custom px-3 py-2 mb-4">
-
-        <div class="d-flex flex-wrap align-items-center gap-2">
-
-            <a href="{{ route('dashboard') }}"
-               class="nav-link">
-
-                📊 Dashboard
-
-            </a>
-
-            <a href="{{ route('sites.index') }}"
-   class="nav-link">
-
-    🏢 Sites
-
-</a>
-
-
-            <a href="{{ route('attendance.employee') }}"
-               class="nav-link">
-
-                🕘 Attendance
-
-            </a>
-
-
-            <a href="{{ route('attendance.history') }}"
-               class="nav-link">
-
-                📋 History
-
-            </a>
-
-
-            <a href="{{ route('attendance.outings') }}"
-               class="nav-link">
-
-                🚶 Outings
-
-            </a>
-
-
-            <a href="{{ route('employees.index') }}"
-               class="nav-link">
-
-                👥 Employees
-
-            </a>
-
-
-            <a href="{{ route('visitors.index') }}"
-               class="nav-link">
-
-                🚪 Visitors
-
-            </a>
-
-
-            <a href="{{ route('attendance.emergency') }}"
-               class="nav-link">
-
-                🚨 Emergency
-
-            </a>
-
-
-            <a href="{{ route('admin-users.index') }}"
-               class="nav-link active">
-
-                👤 Admin Users
-
-            </a>
-
-
-            <a href="{{ route('profile.edit') }}"
-               class="nav-link">
-
-                ⚙️ Profile
-
-            </a>
-
-
-            <div class="ms-auto">
-
-                <form method="POST"
-                      action="{{ route('logout') }}">
-
-                    @csrf
-
-                    <button type="submit"
-                            class="btn btn-outline-danger btn-sm">
-
-                        🚪 Logout
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </div>
+    @include('partials.admin-nav')
 
 
     {{-- PAGE HEADER --}}
@@ -214,11 +108,11 @@
         <div>
 
             <h2 class="fw-bold mb-1">
-                Admin Users
+                Users
             </h2>
 
             <p class="text-muted mb-0">
-                Manage administrator accounts for the attendance system.
+                Create and manage user and admin accounts.
             </p>
 
         </div>
@@ -227,7 +121,7 @@
         <a href="{{ route('admin-users.create') }}"
            class="btn btn-primary btn-lg">
 
-            + Create Admin
+            + Add User
 
         </a>
 
@@ -283,7 +177,7 @@
                 <div class="card-body">
 
                     <div class="text-muted small mb-1">
-                        Total Administrators
+                        Total Accounts
                     </div>
 
                     <h3 class="fw-bold mb-0">
@@ -304,13 +198,11 @@
                 <div class="card-body">
 
                     <div class="text-muted small mb-1">
-                        Logged In Account
+                        👑 Admins
                     </div>
 
                     <h3 class="fw-bold mb-0">
-
-                        {{ auth()->user()->name }}
-
+                        {{ $users->where('is_admin', true)->count() }}
                     </h3>
 
                 </div>
@@ -327,11 +219,11 @@
                 <div class="card-body">
 
                     <div class="text-muted small mb-1">
-                        Access Level
+                        👤 Users
                     </div>
 
                     <h3 class="fw-bold mb-0">
-                        Administrator
+                        {{ $users->where('is_admin', false)->count() }}
                     </h3>
 
                 </div>
@@ -358,11 +250,15 @@
                         <tr>
 
                             <th class="px-4">
-                                Administrator
+                                Name
                             </th>
 
                             <th>
                                 Email
+                            </th>
+
+                            <th>
+                                Role
                             </th>
 
                             <th>
@@ -428,6 +324,19 @@
                             </td>
 
 
+                            {{-- ROLE --}}
+
+                            <td>
+
+                                @if($user->is_admin)
+                                    <span class="badge text-bg-primary">👑 Admin</span>
+                                @else
+                                    <span class="badge text-bg-secondary">👤 User</span>
+                                @endif
+
+                            </td>
+
+
                             {{-- CREATED --}}
 
                             <td>
@@ -469,7 +378,7 @@
                                                   $user
                                               ) }}"
                                               onsubmit="return confirm(
-                                                  'Are you sure you want to delete this administrator account?'
+                                                  'Are you sure you want to delete this account?'
                                               );">
 
                                             @csrf
@@ -507,7 +416,7 @@
 
                         <tr>
 
-                            <td colspan="4"
+                            <td colspan="5"
                                 class="text-center py-5">
 
                                 <div class="fs-1 mb-3">
@@ -515,17 +424,17 @@
                                 </div>
 
                                 <h5 class="fw-bold">
-                                    No administrators found
+                                    No accounts found
                                 </h5>
 
                                 <p class="text-muted mb-3">
-                                    Create an administrator account to get started.
+                                    Add a user or admin account to get started.
                                 </p>
 
                                 <a href="{{ route('admin-users.create') }}"
                                    class="btn btn-primary">
 
-                                    + Create Admin
+                                    + Add User
 
                                 </a>
 
@@ -554,7 +463,7 @@
 
         <span class="mx-2">•</span>
 
-        Administrator Management
+        User Management
 
     </div>
 

@@ -103,6 +103,9 @@
 
     <div class="header">
 
+        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/goodman-fielder-mark.png'))) }}"
+             alt="Goodman Fielder" style="width: 54px; height: 54px; margin-bottom: 6px;">
+
         <div class="company">
             GOODMAN FIELDER
         </div>

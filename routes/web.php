@@ -147,6 +147,11 @@ Route::get('/attendance/emergency', [
     'emergency'
 ])->name('attendance.emergency');
 
+Route::get('/attendance/emergency/pdf', [
+    AttendanceController::class,
+    'emergencyPdf'
+])->name('attendance.emergency.pdf');
+
 Route::post('/attendance/recognize', [
     AttendanceController::class,
     'recognizeFace'

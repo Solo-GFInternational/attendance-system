@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Create Admin | Attendance Management System</title>
+    <title>Add User | Attendance Management System</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -98,110 +98,11 @@
 </head>
 
 
-<body>
+<body class="admin-ui">
 
 <div class="container-fluid px-4 py-4">
 
-
-    {{-- NAVIGATION --}}
-
-    <div class="navbar-custom px-3 py-2 mb-4">
-
-        <div class="d-flex flex-wrap align-items-center gap-2">
-
-            <a href="{{ route('dashboard') }}"
-               class="nav-link">
-
-                📊 Dashboard
-
-            </a>
-
-
-            <a href="{{ route('attendance.employee') }}"
-               class="nav-link">
-
-                🕘 Attendance
-
-            </a>
-
-
-            <a href="{{ route('attendance.history') }}"
-               class="nav-link">
-
-                📋 History
-
-            </a>
-
-
-            <a href="{{ route('attendance.outings') }}"
-               class="nav-link">
-
-                🚶 Outings
-
-            </a>
-
-
-            <a href="{{ route('employees.index') }}"
-               class="nav-link">
-
-                👥 Employees
-
-            </a>
-
-
-            <a href="{{ route('visitors.index') }}"
-               class="nav-link">
-
-                🚪 Visitors
-
-            </a>
-
-
-            <a href="{{ route('attendance.emergency') }}"
-               class="nav-link">
-
-                🚨 Emergency
-
-            </a>
-
-
-            <a href="{{ route('admin-users.index') }}"
-               class="nav-link active">
-
-                👤 Admin Users
-
-            </a>
-
-
-            <a href="{{ route('profile.edit') }}"
-               class="nav-link">
-
-                ⚙️ Profile
-
-            </a>
-
-
-            <div class="ms-auto">
-
-                <form method="POST"
-                      action="{{ route('logout') }}">
-
-                    @csrf
-
-                    <button type="submit"
-                            class="btn btn-outline-danger btn-sm">
-
-                        🚪 Logout
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </div>
+    @include('partials.admin-nav')
 
 
     {{-- FORM CARD --}}
@@ -218,11 +119,11 @@
                 <div>
 
                     <h2 class="fw-bold mb-1">
-                        Create Administrator
+                        Add User
                     </h2>
 
                     <p class="text-muted mb-0">
-                        Create a new administrator account.
+                        Create a new user or admin account.
                     </p>
 
                 </div>
@@ -243,13 +144,13 @@
             <div class="info-box mb-4">
 
                 <div class="fw-semibold mb-1">
-                    🔐 Administrator Access
+                    🔐 Choosing a role
                 </div>
 
                 <div class="text-muted small">
 
-                    This account will be able to access the
-                    Attendance Management System administration area.
+                    Both roles can sign in, manage employees and pull
+                    reports. Only Admins can create and manage accounts.
 
                 </div>
 
@@ -308,7 +209,7 @@
                         name="name"
                         class="form-control @error('name') is-invalid @enderror"
                         value="{{ old('name') }}"
-                        placeholder="Enter administrator name"
+                        placeholder="Enter full name"
                         required
                         autofocus>
 
@@ -340,7 +241,7 @@
                         name="email"
                         class="form-control @error('email') is-invalid @enderror"
                         value="{{ old('email') }}"
-                        placeholder="Enter administrator email"
+                        placeholder="Enter email address"
                         required>
 
                     @error('email')
@@ -438,6 +339,11 @@
                 </div>
 
 
+                {{-- ROLE --}}
+
+                @include('admin-users.partials.role-picker', ['selected' => 'user'])
+
+
                 {{-- BUTTONS --}}
 
                 <div class="d-flex justify-content-end gap-2">
@@ -452,7 +358,7 @@
                     <button type="submit"
                             class="btn btn-primary px-4">
 
-                        👤 Create Administrator
+                        👤 Create Account
 
                     </button>
 
@@ -469,7 +375,7 @@
 
         Attendance Management System
         <span class="mx-2">•</span>
-        Administrator Management
+        User Management
 
     </div>
 

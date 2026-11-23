@@ -113,65 +113,10 @@
     </style>
 </head>
 
-<body>
+<body class="admin-ui">
 <div class="container-fluid px-4 py-4">
 
-    {{-- NAVIGATION --}}
-    <div class="navbar-custom px-3 py-2 mb-4">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-
-            <a href="{{ route('dashboard') }}" class="nav-link">
-                📊 Dashboard
-            </a>
-
-            <a href="{{ route('attendance.employee') }}" class="nav-link">
-                🕘 Attendance
-            </a>
-
-            <a href="{{ route('attendance.history') }}" class="nav-link">
-                📋 History
-            </a>
-
-            <a href="{{ route('attendance.outings') }}" class="nav-link">
-                🚶 Outings
-            </a>
-
-            <a href="{{ route('employees.index') }}" class="nav-link">
-                👥 Employees
-            </a>
-
-            <a href="{{ route('visitors.index') }}" class="nav-link">
-                🚪 Visitors
-            </a>
-
-            <a href="{{ route('attendance.emergency') }}" class="nav-link">
-                🚨 Emergency
-            </a>
-
-            @if(auth()->user()?->is_admin)
-                <a href="{{ route('admin-users.index') }}"
-                   class="nav-link active">
-                    👤 Admin Users
-                </a>
-            @endif
-
-            <a href="{{ route('profile.edit') }}" class="nav-link">
-                ⚙️ Profile
-            </a>
-
-            <div class="ms-auto">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <button type="submit"
-                            class="btn btn-outline-danger btn-sm">
-                        🚪 Logout
-                    </button>
-                </form>
-            </div>
-
-        </div>
-    </div>
+    @include('partials.admin-nav')
 
     {{-- FORM CARD --}}
     <div class="card form-card">
@@ -188,11 +133,11 @@
 
                     @if($user->is_admin)
                         <span class="account-badge">
-                            👑 Administrator Account
+                            👑 Admin Account
                         </span>
                     @else
                         <span class="account-badge">
-                            👤 Regular User Account
+                            👤 User Account
                         </span>
                     @endif
                 </div>
@@ -211,8 +156,8 @@
 
                 <div class="text-muted small">
                     Leave both password fields blank to keep the current
-                    password. Administrator access grants elevated
-                    permissions. Only grant it to trusted users.
+                    password. Only give the Admin role to people who
+                    should be able to create and manage accounts.
                 </div>
             </div>
 
@@ -352,28 +297,10 @@
                     </div>
                 </div>
 
-                {{-- ADMINISTRATOR PERMISSIONS --}}
-                <div class="info-box mb-4">
-                    <div class="form-check">
-                        <input
-                            type="checkbox"
-                            id="is_admin"
-                            name="is_admin"
-                            value="1"
-                            class="form-check-input"
-                            {{ old('is_admin', $user->is_admin) ? 'checked' : '' }}
-                        >
-
-                        <label for="is_admin" class="form-check-label">
-                            Administrator Access
-                        </label>
-                    </div>
-
-                    <div class="text-muted small mt-2">
-                        Tick this option to grant administrator privileges.
-                        Untick it to make the account a regular user.
-                    </div>
-                </div>
+                {{-- ROLE --}}
+                @include('admin-users.partials.role-picker', [
+                    'selected' => $user->is_admin ? 'admin' : 'user',
+                ])
 
                 {{-- BUTTONS --}}
                 <div class="d-flex flex-wrap justify-content-end gap-2">
@@ -394,7 +321,7 @@
     <div class="text-center text-muted small mt-4">
         Attendance Management System
         <span class="mx-2">•</span>
-        Administrator Management
+        User Management
     </div>
 
 </div>

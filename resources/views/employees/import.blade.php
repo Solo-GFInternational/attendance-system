@@ -37,7 +37,11 @@
     </style>
 </head>
 
-<body>
+<body class="admin-ui">
+
+<div class="container-fluid px-4 pt-4">
+    @include('partials.admin-nav')
+</div>
 
 <div class="container px-4">
 

@@ -1,0 +1,568 @@
+/*
+|--------------------------------------------------------------------------
+| Admin theme
+|--------------------------------------------------------------------------
+|
+| Shared look for every admin page. Applies only inside <body class="admin-ui">,
+| so the public kiosk pages (visitor register, emergency roll call, sign-in)
+| are not affected. Selectors are prefixed with .admin-ui so they win over
+| the older per-page <style> blocks without needing !important.
+|
+*/
+
+.admin-ui {
+    --gf-bg: #f4f6f9;
+    --gf-surface: #ffffff;
+    --gf-border: #e3e7ee;
+    --gf-border-strong: #cfd6e1;
+    --gf-text: #1f2937;
+    --gf-muted: #6b7280;
+    --gf-primary: #1f5fd6;
+    --gf-primary-hover: #194fb3;
+    --gf-primary-soft: #eaf1fd;
+    --gf-danger: #c62f3b;
+    --gf-danger-soft: #fdecee;
+    --gf-radius: 12px;
+    --gf-radius-sm: 8px;
+    --gf-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    --gf-shadow-md: 0 4px 12px rgba(16, 24, 40, .06);
+
+    background: var(--gf-bg) !important;
+    color: var(--gf-text);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* =========================================================
+   HEADER / NAVIGATION
+   ========================================================= */
+
+.gf-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #ffffff;
+    border: 1px solid #e3e7ee;
+    border-radius: 12px;
+    padding: 8px 10px 8px 14px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+.gf-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.gf-nav-mark {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.gf-nav-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.gf-nav-brand-text strong {
+    color: #1f2937;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.gf-nav-brand-text span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.gf-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.gf-nav-links::-webkit-scrollbar {
+    display: none;
+}
+
+/* One shape for every clickable item in the header */
+.gf-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #4b5563;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.gf-nav-link:hover {
+    background: #f1f4f9;
+    color: #1f2937;
+}
+
+.gf-nav-link.active {
+    background: #eaf1fd;
+    color: #1f5fd6;
+}
+
+.gf-nav-link:focus-visible,
+.gf-nav-user:focus-visible {
+    outline: 2px solid #1f5fd6;
+    outline-offset: 2px;
+}
+
+.gf-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.gf-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Add User: same shape as the other links, outlined in the brand colour */
+.gf-nav-link-primary {
+    border-color: #c9d9f7;
+    color: #1f5fd6;
+}
+
+.gf-nav-link-primary:hover,
+.gf-nav-link-primary.active {
+    background: #eaf1fd;
+    border-color: #1f5fd6;
+    color: #1f5fd6;
+}
+
+.gf-nav-link-danger:hover {
+    background: #fdecee;
+    color: #c62f3b;
+}
+
+.gf-nav-divider {
+    width: 1px;
+    height: 24px;
+    background: #e3e7ee;
+    margin: 0 6px;
+}
+
+.gf-nav-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 40px;
+    padding: 0 10px 0 4px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background .15s ease;
+}
+
+.gf-nav-user:hover,
+.gf-nav-user.active {
+    background: #f1f4f9;
+}
+
+.gf-nav-avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e8edf5;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.gf-nav-user-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.gf-nav-user-text strong {
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 600;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gf-nav-user-text span {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.gf-nav-logout-form {
+    margin: 0;
+}
+
+@media (max-width: 1399px) {
+    .gf-nav-actions .gf-nav-link span,
+    .gf-nav-user-text {
+        display: none;
+    }
+
+    .gf-nav-actions .gf-nav-link {
+        padding: 0 10px;
+    }
+
+    .gf-nav-user {
+        padding: 0 4px;
+    }
+}
+
+@media (max-width: 1099px) {
+    .gf-nav {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .gf-nav-brand {
+        margin-right: auto;
+    }
+
+    .gf-nav-links {
+        order: 3;
+        flex-basis: 100%;
+        border-top: 1px solid #e3e7ee;
+        padding-top: 8px;
+    }
+}
+
+@media (max-width: 575px) {
+    .gf-nav-brand-text {
+        display: none;
+    }
+}
+
+
+/* =========================================================
+   PAGE TITLES
+   ========================================================= */
+
+.admin-ui h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--gf-text);
+}
+
+.admin-ui .page-header h2,
+.admin-ui h2.fw-bold.mb-1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--gf-text);
+}
+
+.admin-ui .text-muted {
+    color: var(--gf-muted) !important;
+}
+
+.admin-ui .page-header {
+    background: var(--gf-surface);
+    border: 1px solid var(--gf-border);
+    border-radius: var(--gf-radius);
+    box-shadow: var(--gf-shadow);
+    padding: 22px 24px;
+}
+
+.admin-ui .date-badge {
+    background: var(--gf-primary-soft);
+    color: var(--gf-primary);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.admin-ui .card,
+.admin-ui .dashboard-card,
+.admin-ui .table-card,
+.admin-ui .filter-card,
+.admin-ui .summary-card,
+.admin-ui .page-card,
+.admin-ui .form-card,
+.admin-ui .import-card {
+    background: var(--gf-surface);
+    border: 1px solid var(--gf-border) !important;
+    border-radius: var(--gf-radius);
+    box-shadow: var(--gf-shadow) !important;
+}
+
+.admin-ui .card.shadow-sm {
+    box-shadow: var(--gf-shadow) !important;
+}
+
+/* Calm, professional hover: no jumping cards */
+.admin-ui .dashboard-card:hover,
+.admin-ui .summary-card:hover {
+    transform: none;
+    box-shadow: var(--gf-shadow-md) !important;
+}
+
+.admin-ui .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--gf-border);
+    font-weight: 600;
+}
+
+.admin-ui .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
+.admin-ui .info-box {
+    background: #f8fafc;
+    border: 1px solid var(--gf-border);
+    border-left: 3px solid var(--gf-primary);
+    border-radius: var(--gf-radius-sm);
+    padding: 14px 16px;
+}
+
+
+/* =========================================================
+   TABLES
+   ========================================================= */
+
+.admin-ui .table {
+    margin-bottom: 0;
+    color: var(--gf-text);
+}
+
+.admin-ui .table > thead th,
+.admin-ui .table-light th {
+    background: #f8fafc !important;
+    color: var(--gf-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--gf-border);
+    padding-top: 12px;
+    padding-bottom: 12px;
+    white-space: nowrap;
+}
+
+.admin-ui .table > tbody td {
+    padding-top: 13px;
+    padding-bottom: 13px;
+    border-color: #eef1f5;
+    vertical-align: middle;
+}
+
+.admin-ui .table-hover > tbody > tr:hover > * {
+    background-color: #f8fafc;
+    --cui-table-accent-bg: #f8fafc;
+    --bs-table-accent-bg: #f8fafc;
+}
+
+.admin-ui .card > .card-body.p-0 .table-responsive,
+.admin-ui .table-card .table-responsive {
+    border-radius: var(--gf-radius);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.admin-ui .btn {
+    border-radius: var(--gf-radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 16px;
+    box-shadow: none;
+    transform: none !important;
+}
+
+.admin-ui .btn-sm {
+    font-size: 13px;
+    padding: 5px 11px;
+}
+
+.admin-ui .btn-lg {
+    font-size: 15px;
+    padding: 9px 18px;
+}
+
+.admin-ui .btn-primary {
+    background: var(--gf-primary);
+    border-color: var(--gf-primary);
+    color: #ffffff;
+}
+
+.admin-ui .btn-primary:hover,
+.admin-ui .btn-primary:focus {
+    background: var(--gf-primary-hover);
+    border-color: var(--gf-primary-hover);
+    color: #ffffff;
+}
+
+.admin-ui .btn-outline-primary {
+    color: var(--gf-primary);
+    border-color: #c9d9f7;
+}
+
+.admin-ui .btn-outline-primary:hover {
+    background: var(--gf-primary-soft);
+    color: var(--gf-primary);
+    border-color: var(--gf-primary);
+}
+
+.admin-ui .btn-outline-secondary {
+    color: #374151;
+    border-color: var(--gf-border-strong);
+    background: #ffffff;
+}
+
+.admin-ui .btn-outline-secondary:hover {
+    background: #f1f4f9;
+    color: var(--gf-text);
+    border-color: var(--gf-border-strong);
+}
+
+.admin-ui .btn-outline-danger {
+    color: var(--gf-danger);
+    border-color: #f1c4c8;
+}
+
+.admin-ui .btn-outline-danger:hover {
+    background: var(--gf-danger-soft);
+    color: var(--gf-danger);
+    border-color: var(--gf-danger);
+}
+
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.admin-ui .form-label,
+.admin-ui .filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.admin-ui .form-control,
+.admin-ui .form-select {
+    border: 1px solid var(--gf-border-strong);
+    border-radius: var(--gf-radius-sm);
+    font-size: 14px;
+    min-height: 40px;
+    color: var(--gf-text);
+    background-color: #ffffff;
+}
+
+.admin-ui .form-control:focus,
+.admin-ui .form-select:focus {
+    border-color: var(--gf-primary);
+    box-shadow: 0 0 0 3px rgba(31, 95, 214, .15);
+}
+
+.admin-ui .form-text {
+    color: var(--gf-muted);
+    font-size: 12.5px;
+}
+
+.admin-ui .form-check-input:checked {
+    background-color: var(--gf-primary);
+    border-color: var(--gf-primary);
+}
+
+
+/* =========================================================
+   BADGES & ALERTS
+   ========================================================= */
+
+.admin-ui .badge {
+    font-weight: 600;
+    font-size: 12px;
+    padding: 5px 9px;
+    border-radius: 6px;
+}
+
+.admin-ui .alert {
+    border: 1px solid transparent;
+    border-radius: var(--gf-radius-sm);
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+.admin-ui .alert-success {
+    background: #ecfdf3;
+    border-color: #b7ebc8;
+    color: #14663a;
+}
+
+.admin-ui .alert-danger {
+    background: var(--gf-danger-soft);
+    border-color: #f5c2c7;
+    color: #9b1c27;
+}
+
+.admin-ui .alert-warning {
+    background: #fffaeb;
+    border-color: #fde7a7;
+    color: #8a5a00;
+}
+
+.admin-ui .alert-info {
+    background: var(--gf-primary-soft);
+    border-color: #c9d9f7;
+    color: #1d4aa3;
+}
+
+
+/* =========================================================
+   FOOTER LINE AT THE BOTTOM OF SOME PAGES
+   ========================================================= */
+
+.admin-ui .footer,
+.admin-ui .text-center.text-muted.small.mt-4 {
+    color: #9ca3af !important;
+    font-size: 12.5px;
+    background: transparent;
+    border: 0;
+}

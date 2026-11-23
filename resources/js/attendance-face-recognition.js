@@ -8,6 +8,11 @@ let modelsLoaded = false;
 let recognitionInProgress = false;
 let recognitionTimer = null;
 
+// Accuracy: identify from several consecutive good frames, not one.
+// The server checks that every frame points to the same employee.
+const REQUIRED_SAMPLES = 3;
+let samples = [];
+
 const startButton =
     document.getElementById('startRecognitionButton');
 
@@ -300,29 +305,55 @@ if (!startButton || !video) {
 
                 // ------------------------------------------------
                 // CHECK FACE POSITION
+                // Large enough, centred, and facing the camera
+                // (side-on faces give unreliable descriptors).
                 // ------------------------------------------------
 
-                if (
+                const positionOk =
                     faceWidthRatio >= 0.18 &&
-                    centerDifference <= 0.20
-                ) {
+                    centerDifference <= 0.20;
+
+                const facingCamera =
+                    positionOk &&
+                    isFacingCamera(detection.landmarks);
+
+                if (positionOk && facingCamera) {
+
+                    samples.push(
+                        Array.from(detection.descriptor)
+                    );
+
+
+                    if (samples.length < REQUIRED_SAMPLES) {
+
+                        if (statusElement) {
+                            statusElement.textContent =
+                                'Face detected. Hold still…';
+                        }
+
+                        recognitionInProgress = false;
+
+                        scheduleNextRecognition(150);
+
+                        return;
+                    }
+
 
                     if (statusElement) {
 
                         statusElement.textContent =
-                            'Face detected. Identifying...';
+                            'Identifying...';
                     }
 
 
-                    const descriptor =
-                        Array.from(
-                            detection.descriptor
-                        );
+                    const toSend = samples;
+
+                    samples = [];
 
 
                     const matched =
-                        await sendDescriptor(
-                            descriptor
+                        await sendDescriptors(
+                            toSend
                         );
 
 
@@ -339,8 +370,19 @@ if (!startButton || !video) {
 
                     return;
                 }
+
+
+                if (statusElement && positionOk && !facingCamera) {
+
+                    statusElement.textContent =
+                        'Please look straight at the camera.';
+                }
             }
 
+
+            // No usable face in this frame: start the sample set again
+            // so frames from different people are never mixed.
+            samples = [];
 
             recognitionInProgress = false;
 
@@ -406,10 +448,45 @@ if (!startButton || !video) {
 
 
     // ========================================================
-    // SEND FACE DESCRIPTOR TO LARAVEL
+    // IS THE FACE TURNED TOWARDS THE CAMERA?
+    // Nose tip roughly between the eyes, eyes roughly level.
     // ========================================================
 
-    async function sendDescriptor(descriptor) {
+    function isFacingCamera(landmarks) {
+
+        const centre = points => ({
+            x: points.reduce((s, p) => s + p.x, 0) / points.length,
+            y: points.reduce((s, p) => s + p.y, 0) / points.length,
+        });
+
+        const leftEye = centre(landmarks.getLeftEye());
+        const rightEye = centre(landmarks.getRightEye());
+        const noseTip = landmarks.getNose()[3];
+
+        const eyeDistance = Math.hypot(
+            rightEye.x - leftEye.x,
+            rightEye.y - leftEye.y
+        );
+
+        if (eyeDistance <= 0) {
+            return false;
+        }
+
+        const turn =
+            Math.abs(noseTip.x - (leftEye.x + rightEye.x) / 2) / eyeDistance;
+
+        const tilt =
+            Math.abs(rightEye.y - leftEye.y) / eyeDistance;
+
+        return turn <= 0.22 && tilt <= 0.25;
+    }
+
+
+    // ========================================================
+    // SEND FACE DESCRIPTORS TO LARAVEL
+    // ========================================================
+
+    async function sendDescriptors(descriptors) {
 
         try {
 
@@ -455,8 +532,8 @@ if (!startButton || !video) {
                         body:
                             JSON.stringify({
 
-                                face_descriptor:
-                                    descriptor
+                                face_descriptors:
+                                    descriptors
                             })
                     }
                 );
@@ -616,8 +693,26 @@ if (!startButton || !video) {
 
         if (employeeSelect) {
 
+            // The list only holds this site's employees; someone from
+            // another site can still be recognised, so add them if missing.
+            let option = Array.from(employeeSelect.options)
+                .find(o => o.value === String(employee.id));
+
+            if (!option) {
+
+                option = document.createElement('option');
+                option.value = String(employee.id);
+                option.textContent = employee.name;
+                option.dataset.name = employee.name;
+                option.dataset.code = employee.employee_code || '';
+                employeeSelect.appendChild(option);
+            }
+
+            // Recognised by face, so the face is registered.
+            option.dataset.faceRegistered = '1';
+
             employeeSelect.value =
-                employee.id;
+                String(employee.id);
 
 
             employeeSelect.dispatchEvent(
@@ -655,6 +750,8 @@ if (!startButton || !video) {
     // ========================================================
 
     function stopCamera() {
+
+        samples = [];
 
         recognitionRunning = false;
 

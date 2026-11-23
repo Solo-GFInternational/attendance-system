@@ -298,77 +298,11 @@
 
 </head>
 
-<body>
+<body class="admin-ui">
 
 <div class="container-fluid py-4 px-4">
 
-
-<!-- =========================================================
-     ADMIN NAVIGATION
-     ========================================================= -->
-
-<div class="admin-navbar mb-4">
-
-    <div class="d-flex flex-wrap align-items-center gap-2">
-
-        <a href="{{ route('dashboard') }}"
-           class="nav-link">
-            📊 Dashboard
-        </a>
-
-        <a href="{{ route('attendance.admin') }}"
-           class="nav-link">
-            🕘 Attendance
-        </a>
-
-        <a href="{{ route('attendance.history') }}"
-           class="nav-link active">
-            📋 History
-        </a>
-
-        <a href="{{ route('attendance.outings') }}"
-           class="nav-link">
-            🚶 Outings
-        </a>
-
-        <a href="{{ route('employees.index') }}"
-           class="nav-link">
-            👥 Employees
-        </a>
-        <a href="{{ route('sites.index') }}"
-   class="nav-link">
-
-    🏢 Sites
-
-</a>
-
-        <a href="{{ route('visitors.index') }}"
-           class="nav-link">
-            🚪 Visitors
-        </a>
-
-        <a href="{{ route('attendance.emergency') }}"
-           class="nav-link">
-            🚨 Emergency
-        </a>
-        @if(auth()->user()?->is_admin)
-    <a href="{{ route('admin-users.index') }}" class="nav-link">
-        👤 Admin Users
-    </a>
-@endif
-
-        <div class="ms-lg-auto">
-
-            <a href="{{ route('profile.edit') }}"
-               class="nav-link">
-                ⚙️ Profile
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
+@include('partials.admin-nav')
 
 
 <!-- =========================================================

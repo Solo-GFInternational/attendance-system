@@ -54,6 +54,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Port of a local HTTPS test proxy (e.g. local-ssl-proxy on 8443).
+    // Requests arriving on this port get https:// links; plain http
+    // access (e.g. 127.0.0.1:8020) is unaffected.
+    'https_proxy_port' => env('HTTPS_PROXY_PORT'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
