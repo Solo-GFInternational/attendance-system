@@ -109,14 +109,13 @@
 
                             <input type="text"
                                    name="code"
-                                   class="form-control form-control-lg"
+                                   class="form-control form-control-lg text-uppercase"
                                    placeholder="e.g. LAU"
                                    value="{{ old('code') }}"
+                                   maxlength="50"
                                    required>
 
-                            <div class="form-text">
-                                A short unique code for the site.
-                            </div>
+                            @include('sites.partials.link-preview')
 
                         </div>
 

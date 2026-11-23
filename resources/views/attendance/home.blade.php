@@ -321,6 +321,13 @@
 
     <main class="k-main">
 
+        @if (session('error') || (! $kioskSite && auth()->guest()))
+            <div class="k-alert warning" role="alert">
+                @include('partials.kiosk-icon', ['name' => 'info'])
+                <div>{{ session('error') ?: 'This tablet is not set to a site. Please open your site link.' }}</div>
+            </div>
+        @endif
+
         <div class="options">
 
             {{-- Employee attendance --}}

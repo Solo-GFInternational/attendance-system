@@ -109,15 +109,29 @@
 
                 <ul class="mb-0 mt-2">
 
-                    <li>Cost Centre Description Code</li>
-
-                    <li>Employee Code</li>
+                    <li>Employee ID</li>
 
                     <li>Employee Name</li>
 
-                    <li>Position Description</li>
+                    <li>Department</li>
+
+                    <li>Designation</li>
+
+                    <li>
+                        Site &ndash; the same site name or code as on the
+                        <a href="{{ route('sites.index') }}">Sites</a> page
+                    </li>
 
                 </ul>
+
+                <div class="mt-3">
+                    @if ($sites->isEmpty())
+                        <strong>There are no active sites yet.</strong> Add your sites before importing.
+                    @else
+                        <strong>Sites you can use:</strong>
+                        {{ $sites->map(fn ($site) => $site->name === $site->code ? $site->name : $site->name . ' (' . $site->code . ')')->implode(', ') }}
+                    @endif
+                </div>
 
             </div>
 
@@ -177,10 +191,12 @@
 
                 <p class="text-muted mb-0">
 
-                    If an Employee Code already exists, the system will update
-                    the employee's name, department and designation instead of
-                    creating a duplicate. Existing employee status will not be
-                    changed.
+                    If an Employee ID already exists, the system will update
+                    the employee's name, department, designation and site instead
+                    of creating a duplicate. If Site is blank, an existing employee
+                    keeps their current site. Existing employee status will not be
+                    changed. Rows with a missing or unknown site are skipped and
+                    listed after the import.
 
                 </p>
 

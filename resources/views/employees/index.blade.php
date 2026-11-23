@@ -914,6 +914,27 @@ body.modal-open {
 
 
 <!-- ========================================================= -->
+<!-- IMPORT: SKIPPED ROWS -->
+<!-- ========================================================= -->
+
+@if(session('import_errors'))
+
+    <div class="alert alert-warning border-0 shadow-sm" role="alert">
+
+        <strong>These rows were not imported ({{ count(session('import_errors')) }}):</strong>
+
+        <ul class="mb-0 mt-2" style="max-height: 260px; overflow-y: auto;">
+            @foreach(session('import_errors') as $importError)
+                <li>{{ $importError }}</li>
+            @endforeach
+        </ul>
+
+    </div>
+
+@endif
+
+
+<!-- ========================================================= -->
 <!-- ERROR MESSAGE -->
 <!-- ========================================================= -->
 

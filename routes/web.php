@@ -8,7 +8,9 @@ use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SiteController;
+use App\Http\Middleware\RestoreKioskSite;
 use App\Models\Site;
+use Illuminate\Http\Request;
 use App\Http\Controllers\AITestController;
 use App\Http\Controllers\AttendanceAIController;
 
@@ -21,20 +23,6 @@ use App\Http\Controllers\AttendanceAIController;
 Route::get('/', function () {
     return view('attendance.home');
 })->name('home');
-
-Route::get('/attendance/{site}', function ($site) {
-
-    $site = Site::where('active', true)
-        ->whereRaw('LOWER(name) = ?', [strtolower($site)])
-        ->firstOrFail();
-
-    session([
-        'attendance_site_id' => $site->id,
-    ]);
-
-    return redirect()->route('attendance.employee');
-
-})->name('attendance.site');
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +37,9 @@ Route::get('/attendance', function () {
     return view('attendance.home');
 })->name('attendance.index');
 
+// Tablet pages: limited to the tablet's own site (see RequireKioskSite).
+Route::middleware('kiosk.site')->group(function () {
+
 Route::post('/attendance/register-face/{employee}', [
     AttendanceController::class,
     'registerFaceFirstTime'
@@ -58,31 +49,6 @@ Route::get('/attendance/employee', [
     AttendanceController::class,
     'index'
 ])->name('attendance.employee');
-
-Route::get('/attendance/{site}', function ($site) {
-
-    $siteMap = [
-        'DG' => 'Dry Goods HQ',
-        'FG' => 'Frozen Goods',
-        'FM' => 'Feedmill',
-    ];
-
-    $code = strtoupper($site);
-
-    abort_unless(isset($siteMap[$code]), 404);
-
-    $site = Site::where('active', true)
-        ->where('name', $siteMap[$code])
-        ->firstOrFail();
-
-    session([
-        'attendance_site_id' => $site->id,
-    ]);
-
-    return view('attendance.home');
-
-})->where('site', 'DG|FG|FM')->name('attendance.site');
-
 
 Route::post('/attendance/sign-in', [
     AttendanceController::class,
@@ -157,12 +123,59 @@ Route::post('/attendance/recognize', [
     'recognizeFace'
 ])->name('attendance.recognize');
 
+}); // kiosk.site
+
+
+/*
+|--------------------------------------------------------------------------
+| TABLET SITE LINK
+|--------------------------------------------------------------------------
+|
+| /attendance/{site code}, e.g. /attendance/DG. Works for every active site
+| using the code entered on the Sites page (upper or lower case).
+|
+| Keep this AFTER the other /attendance/... pages so it never hides them.
+| Their names are blocked as site codes in Site::RESERVED_CODES.
+|
+*/
+
+Route::get('/attendance/{code}', function (Request $request, string $code) {
+
+    $site = Site::where('active', true)
+        ->whereRaw('LOWER(code) = ?', [strtolower($code)])
+        ->firstOrFail();
+
+    $current = $request->session()->get('attendance_site_id');
+    $changing = $current && (int) $current !== $site->id;
+
+    // Once a tablet is set, only someone who is logged in can move it.
+    if ($changing && ! $request->user()) {
+        return redirect()
+            ->route('attendance.index')
+            ->with('error', 'This tablet belongs to another site. Log in to change its site.');
+    }
+
+    if ($changing) {
+        $request->session()->forget('face_verified');
+    }
+
+    RestoreKioskSite::remember($request, $site);
+
+    $response = response()->view('attendance.home');
+
+    // Remove the old site's offline roll call from this device.
+    return $changing ? $response->header('Clear-Site-Data', '"storage"') : $response;
+
+})->where('code', '[A-Za-z0-9-]+')->name('attendance.site');
+
 
 /*
 |--------------------------------------------------------------------------
 | PUBLIC VISITOR REGISTER
 |--------------------------------------------------------------------------
 */
+
+Route::middleware('kiosk.site')->group(function () {
 
 Route::get('/visitors', [
     VisitorController::class,
@@ -180,6 +193,8 @@ Route::patch('/visitors/{visitor}/sign-out', [
     VisitorController::class,
     'signOut'
 ])->name('visitors.sign-out');
+
+}); // kiosk.site
 
 
 /*
@@ -280,6 +295,15 @@ Route::post('/admin-users/{user}/reset-password', [
     | SITE MANAGEMENT
     |--------------------------------------------------------------------------
     */
+
+    Route::post('/sites/clear-device', function (Request $request) {
+        RestoreKioskSite::forget($request);
+
+        return redirect()
+            ->route('sites.index')
+            ->with('success', 'This device is no longer set to a site.')
+            ->header('Clear-Site-Data', '"storage"');
+    })->name('sites.clear-device');
 
     Route::resource('sites', SiteController::class)
         ->except(['show']);
@@ -390,6 +414,7 @@ Route::get('/ai-test', [AITestController::class, 'test']);
 });
 
 Route::post('/admin/attendance-ai/ask', [AttendanceAIController::class, 'ask'])
+    ->middleware('auth')
     ->name('attendance.ai.ask');
 /*
 |--------------------------------------------------------------------------

@@ -193,7 +193,11 @@ class EmployeeController extends Controller
 
 public function showImport()
 {
-    return view('employees.import');
+    $sites = Site::where('active', true)
+        ->orderBy('name')
+        ->get();
+
+    return view('employees.import', compact('sites'));
 }
 
 
@@ -270,54 +274,63 @@ public function import(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    $requiredHeaders = [
-        'Cost Centre Description Code',
-        'Employee Code',
-        'Employee Name',
-        'Position Description',
+    // Same headings as the Add Employee form. The older payroll headings
+    // are still accepted. Capitals and extra spaces are ignored.
+    $columns = [
+        'Employee ID' => 'Employee Code',
+        'Employee Name' => null,
+        'Department' => 'Cost Centre Description Code',
+        'Designation' => 'Position Description',
+        'Site' => null,
     ];
 
-    foreach ($requiredHeaders as $requiredHeader) {
+    $headerKey = fn (string $value) => mb_strtolower(
+        preg_replace('/\s+/', ' ', $value)
+    );
 
-        if (!in_array($requiredHeader, $headers)) {
+    $headerKeys = array_map($headerKey, $headers);
+
+    $positions = [];
+
+    foreach ($columns as $heading => $olderHeading) {
+
+        $position = array_search($headerKey($heading), $headerKeys, true);
+
+        if ($position === false && $olderHeading) {
+            $position = array_search($headerKey($olderHeading), $headerKeys, true);
+        }
+
+        if ($position === false) {
 
             fclose($handle);
 
             return back()->with(
                 'error',
-                'Missing required CSV column: ' .
-                $requiredHeader
+                'Missing required CSV column: ' . $heading
             );
         }
 
+        $positions[$heading] = $position;
     }
 
+    $employeeCodeIndex = $positions['Employee ID'];
+    $employeeNameIndex = $positions['Employee Name'];
+    $departmentIndex = $positions['Department'];
+    $designationIndex = $positions['Designation'];
+    $siteIndex = $positions['Site'];
 
-    /*
-    |--------------------------------------------------------------------------
-    | FIND COLUMN POSITIONS
-    |--------------------------------------------------------------------------
-    */
-
-    $costCentreIndex = array_search(
-        'Cost Centre Description Code',
-        $headers
+    // Site column: matched to an active site's name or code, ignoring
+    // capitals and extra spaces. A name wins if it equals another site's code.
+    $siteKey = fn (string $value) => mb_strtolower(
+        trim(preg_replace('/\s+/', ' ', $value))
     );
 
-    $employeeCodeIndex = array_search(
-        'Employee Code',
-        $headers
-    );
+    $siteIds = [];
 
-    $employeeNameIndex = array_search(
-        'Employee Name',
-        $headers
-    );
-
-    $positionIndex = array_search(
-        'Position Description',
-        $headers
-    );
+    foreach (Site::where('active', true)->get() as $site) {
+        $siteIds['code'][$siteKey($site->code)] = $site->id;
+        $siteIds['name'][$siteKey($site->name)] = $site->id;
+    }
 
 
     /*
@@ -389,22 +402,32 @@ public function import(Request $request)
                 )
                 : '';
 
-            $department = isset($row[$costCentreIndex])
+            $department = isset($row[$departmentIndex])
                 ? trim(
                     str_replace(
                         "\xC2\xA0",
                         ' ',
-                        $row[$costCentreIndex]
+                        $row[$departmentIndex]
                     )
                 )
                 : '';
 
-            $designation = isset($row[$positionIndex])
+            $designation = isset($row[$designationIndex])
                 ? trim(
                     str_replace(
                         "\xC2\xA0",
                         ' ',
-                        $row[$positionIndex]
+                        $row[$designationIndex]
+                    )
+                )
+                : '';
+
+            $siteText = isset($row[$siteIndex])
+                ? trim(
+                    str_replace(
+                        "\xC2\xA0",
+                        ' ',
+                        $row[$siteIndex]
                     )
                 )
                 : '';
@@ -421,7 +444,7 @@ public function import(Request $request)
                 $skipped++;
 
                 $errors[] =
-                    "Row {$rowNumber}: Employee Code is missing.";
+                    "Row {$rowNumber}: Employee ID is missing.";
 
                 continue;
             }
@@ -451,6 +474,49 @@ public function import(Request $request)
 
             /*
             |--------------------------------------------------------------------------
+            | MATCH SITE
+            |--------------------------------------------------------------------------
+            | Without a site an employee appears on no tablet, so a new
+            | employee must have one. A blank site on an existing employee
+            | keeps the site they already have.
+            */
+
+            if ($siteText === '') {
+
+                $siteId = $employee?->site_id;
+
+                if (! $siteId) {
+
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: {$employeeName} ({$employeeCode}) - Site is missing.";
+
+                    continue;
+                }
+
+            } else {
+
+                $key = $siteKey($siteText);
+
+                $siteId = $siteIds['name'][$key]
+                    ?? $siteIds['code'][$key]
+                    ?? null;
+
+                if (! $siteId) {
+
+                    $skipped++;
+
+                    $errors[] =
+                        "Row {$rowNumber}: {$employeeName} ({$employeeCode}) - Site \"{$siteText}\" does not match an active site.";
+
+                    continue;
+                }
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
             | UPDATE EXISTING EMPLOYEE
             |--------------------------------------------------------------------------
             */
@@ -461,6 +527,7 @@ public function import(Request $request)
                     'name' => $employeeName,
                     'department' => $department ?: null,
                     'designation' => $designation ?: null,
+                    'site_id' => $siteId,
                 ]);
 
                 $updated++;
@@ -478,6 +545,7 @@ public function import(Request $request)
                     'name' => $employeeName,
                     'department' => $department ?: null,
                     'designation' => $designation ?: null,
+                    'site_id' => $siteId,
                     'status' => 'Active',
                 ]);
 

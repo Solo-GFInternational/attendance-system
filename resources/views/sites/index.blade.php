@@ -73,6 +73,27 @@
     @endif
 
 
+    @php $deviceSite = $sites->firstWhere('id', session('attendance_site_id')); @endphp
+
+    @if ($deviceSite)
+
+        <div class="alert alert-info d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+            <span>
+                This device is set to <strong>{{ $deviceSite->name }}</strong>.
+                Its Emergency, Visitors and Employee Attendance pages show that site only.
+            </span>
+
+            <form method="POST" action="{{ route('sites.clear-device') }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Clear this device's site</button>
+            </form>
+
+        </div>
+
+    @endif
+
+
     @if ($errors->any())
 
         <div class="alert alert-danger">
@@ -115,6 +136,10 @@
                             </th>
 
                             <th>
+                                Tablet link
+                            </th>
+
+                            <th>
                                 Employees
                             </th>
 
@@ -150,6 +175,32 @@
                                     <span class="badge text-bg-secondary">
                                         {{ $site->code }}
                                     </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    @if (! $site->hasValidCode())
+
+                                        <span class="text-danger small">Edit the code to create a link</span>
+
+                                    @elseif ($site->active)
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a href="{{ route('attendance.site', $site->code) }}"
+                                               target="_blank" rel="noopener"
+                                               class="small text-break">{{ route('attendance.site', $site->code) }}</a>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary js-copy-link"
+                                                    data-link="{{ route('attendance.site', $site->code) }}">Copy</button>
+                                        </div>
+
+                                    @else
+
+                                        <span class="text-muted small">Off while the site is inactive</span>
+
+                                    @endif
 
                                 </td>
 
@@ -231,7 +282,7 @@
 
                             <tr>
 
-                                <td colspan="5"
+                                <td colspan="6"
                                     class="text-center py-5 text-muted">
 
                                     No sites have been added yet.
@@ -253,6 +304,30 @@
     </div>
 
 </div>
+
+<script>
+    document.querySelectorAll('.js-copy-link').forEach(function (button) {
+        button.addEventListener('click', async function () {
+            let copied = false;
+
+            try {
+                await navigator.clipboard.writeText(button.dataset.link);
+                copied = true;
+            } catch (error) {
+                // Clipboard access needs https or localhost; older method otherwise.
+                const box = document.createElement('textarea');
+                box.value = button.dataset.link;
+                document.body.appendChild(box);
+                box.select();
+                copied = document.execCommand('copy');
+                box.remove();
+            }
+
+            button.textContent = copied ? 'Copied' : 'Copy failed';
+            setTimeout(function () { button.textContent = 'Copy'; }, 1500);
+        });
+    });
+</script>
 
 </body>
 

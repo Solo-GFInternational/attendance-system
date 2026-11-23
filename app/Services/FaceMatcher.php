@@ -76,7 +76,7 @@ class FaceMatcher
             ->whereNotNull('face_descriptor')
             ->whereRaw('LOWER(status) = ?', ['active'])
             ->when($exceptEmployeeId, fn ($q) => $q->where('id', '!=', $exceptEmployeeId))
-            ->get(['id', 'employee_code', 'name', 'face_descriptor'])
+            ->get(['id', 'employee_code', 'name', 'site_id', 'face_descriptor'])
             ->map(fn (Employee $e) => ['employee' => $e, 'descriptor' => $this->descriptorOf($e)])
             ->filter(fn ($known) => $known['descriptor'] !== null)
             ->values();

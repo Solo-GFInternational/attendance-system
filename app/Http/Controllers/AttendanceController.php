@@ -1890,6 +1890,20 @@ public function signIn(Request $request)
             ]);
         }
 
+        // Faces are compared with every site (so a visitor from another site is
+        // not mistaken for someone here), but other sites' people are never shown.
+        $siteId = $request->session()->get('attendance_site_id');
+
+        if ($siteId && (int) $match['employee']->site_id !== (int) $siteId) {
+
+            $this->clearFaceVerification($request);
+
+            return response()->json([
+                'matched' => false,
+                'message' => 'You are not registered at this site.',
+            ]);
+        }
+
         $this->markFaceVerified($request, $match['employee']->id);
 
         return response()->json([

@@ -106,9 +106,15 @@
 
                             <input type="text"
                                    name="code"
-                                   class="form-control form-control-lg"
+                                   class="form-control form-control-lg text-uppercase"
                                    value="{{ old('code', $site->code) }}"
+                                   maxlength="50"
                                    required>
+
+                            @include('sites.partials.link-preview')
+                            <div class="form-text">
+                                Changing the code changes the link, so update any tablet that uses the old one.
+                            </div>
 
                         </div>
 

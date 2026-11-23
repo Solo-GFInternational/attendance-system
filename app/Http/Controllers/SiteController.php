@@ -24,17 +24,40 @@ class SiteController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:sites,name',
-            'code' => 'required|string|max:50|unique:sites,code',
-            'active' => 'required|boolean',
-        ]);
+        $validated = $this->validateSite($request);
 
-        Site::create($validated);
+        $site = Site::create($validated);
 
         return redirect()
             ->route('sites.index')
-            ->with('success', 'Site added successfully.');
+            ->with('success', 'Site added successfully. Tablet link: ' . route('attendance.site', $site->code));
+    }
+
+    /**
+     * The code becomes the tablet link (/attendance/CODE), so it is saved in
+     * capitals and limited to characters that are safe in a web address.
+     */
+    private function validateSite(Request $request, ?Site $site = null): array
+    {
+        if (is_string($request->input('code'))) {
+            $request->merge(['code' => strtoupper(trim($request->input('code')))]);
+        }
+
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('sites', 'name')->ignore($site)],
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Z0-9]+(-[A-Z0-9]+)*$/',
+                Rule::notIn(Site::RESERVED_CODES),
+                Rule::unique('sites', 'code')->ignore($site),
+            ],
+            'active' => 'required|boolean',
+        ], [
+            'code.regex' => 'The site code can only use letters, numbers and dashes (no spaces), because it becomes the tablet link.',
+            'code.not_in' => 'That site code is used by the system. Please choose a different code.',
+        ]);
     }
 
     public function edit(Site $site)
@@ -44,23 +67,7 @@ class SiteController extends Controller
 
     public function update(Request $request, Site $site)
     {
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('sites', 'name')->ignore($site->id),
-            ],
-            'code' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('sites', 'code')->ignore($site->id),
-            ],
-            'active' => 'required|boolean',
-        ]);
-
-        $site->update($validated);
+        $site->update($this->validateSite($request, $site));
 
         return redirect()
             ->route('sites.index')
