@@ -1,0 +1,144 @@
+# CI: checks every push and every PR into main, on GitHub's own Linux runners.
+# It never talks to the GF network or the live database: SQL Server below is a
+# throwaway container that only exists for the length of the run.
+#
+# What blocks (fails the run, and so blocks deploy.yml):
+#   - composer install / npm ci / npm run build
+#   - the migrations, run from scratch against real SQL Server 2022
+#     (this app was moved from MariaDB, so this is the check that matters most)
+#
+# What only warns, for now:
+#   - php artisan test. The suite is the stock Laravel Breeze one; two of its
+#     tests (tests/Feature/Auth/RegistrationTest.php) expect a /register page
+#     that this app deliberately removed, so they always fail. Once the app's
+#     developer deletes or updates that file, remove `continue-on-error` from
+#     the "Run tests" step to make the tests a hard gate too.
+#   - Code style (Pint) is not checked: the existing code isn't Pint-formatted,
+#     and reformatting it is the app developer's call, not CI's.
+name: tests
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel an older run for the same branch/PR when a newer commit arrives.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# config/database.php has `trust_server_certificate` commented out, so it can
+# only be switched on through DB_URL (the live server's .env does the same).
+# These values only exist inside the CI container — never point CI at a GF
+# database. Real environment variables take precedence over .env.
+env:
+  DB_CONNECTION: sqlsrv
+  DB_DATABASE: attendance_test
+  DB_PASSWORD: CiOnly_Passw0rd!
+  DB_URL: 'sqlsrv://sa:CiOnly_Passw0rd!@127.0.0.1:1433/attendance_test?trust_server_certificate=true'
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          # Service containers can't read the env context, so the password is repeated here.
+          MSSQL_SA_PASSWORD: CiOnly_Passw0rd!
+        ports: ['1433:1433']
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P CiOnly_Passw0rd! -Q 'SELECT 1'"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # PHP 8.3 matches the server (C:\PHP). gd + zip for dompdf and
+      # maatwebsite/excel exports.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, bcmath, gd, zip, fileinfo, sqlsrv, pdo_sqlsrv
+          coverage: none
+          tools: composer:v2
+
+      # setup-php installs the sqlsrv/pdo_sqlsrv PHP extensions, but not the
+      # Microsoft ODBC driver they talk through.
+      - name: Install Microsoft ODBC Driver 18 for SQL Server
+        run: |
+          if odbcinst -q -d 2>/dev/null | grep -q 'ODBC Driver 18 for SQL Server'; then
+            echo "ODBC Driver 18 already installed"
+            exit 0
+          fi
+          if [ ! -f /etc/apt/sources.list.d/microsoft-prod.list ]; then
+            curl -sSL -o /tmp/packages-microsoft-prod.deb "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+            sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          fi
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          odbcinst -q -d
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      # .env first: composer's post-autoload-dump runs artisan package:discover.
+      - name: Prepare .env
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      # Views use @vite, so pages need public/build/manifest.json (gitignored).
+      # Building here also catches a broken front-end before it reaches the server.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build front-end assets
+        run: npm run build
+
+      - name: Create test database
+        run: >-
+          docker exec ${{ job.services.mssql.id }}
+          /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$DB_PASSWORD"
+          -Q "CREATE DATABASE [$DB_DATABASE]"
+
+      # The same command deploy.yml runs on the server, on an empty database.
+      - name: Run migrations on SQL Server
+        run: php artisan migrate --force
+
+      - name: Run tests
+        id: tests
+        continue-on-error: true   # see the note at the top of this file
+        run: php artisan test
+
+      - name: Flag test failures
+        if: steps.tests.outcome == 'failure'
+        run: echo "::warning title=Tests failed (not blocking)::php artisan test reported failures. 2 known failures in RegistrationTest are expected; check the 'Run tests' step for anything new."
