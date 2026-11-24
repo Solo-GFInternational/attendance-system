@@ -136,6 +136,14 @@
             </div>
 
 
+            <a href="{{ route('employees.import.template') }}"
+               class="btn btn-outline-primary w-100 mb-4">
+
+                Download Excel Template
+
+            </a>
+
+
             <form method="POST"
                   action="{{ route('employees.import.store') }}"
                   enctype="multipart/form-data">
@@ -154,7 +162,7 @@
                     </h5>
 
                     <p class="text-muted">
-                        Export your Excel spreadsheet as CSV and upload it here.
+                        Fill in the template, save it as CSV UTF-8 and upload it here.
                     </p>
 
                     <input type="file"

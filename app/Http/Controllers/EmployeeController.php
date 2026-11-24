@@ -6,7 +6,9 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Site;
+use App\Services\EmployeeImportTemplate;
 use App\Services\FaceMatcher;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class EmployeeController extends Controller
 {
@@ -203,6 +205,29 @@ public function showImport()
 
 /*
 |--------------------------------------------------------------------------
+| DOWNLOAD IMPORT TEMPLATE
+|--------------------------------------------------------------------------
+*/
+
+public function importTemplate(EmployeeImportTemplate $template)
+{
+    $book = $template->build(
+        Site::where('active', true)->orderBy('name')->get()
+    );
+
+    return response()->streamDownload(
+        fn () => IOFactory::createWriter($book, 'Xlsx')->save('php://output'),
+        'Employee Import Template.xlsx',
+        [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'no-store',
+        ]
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | IMPORT EMPLOYEES FROM CSV
 |--------------------------------------------------------------------------
 */
@@ -229,6 +254,11 @@ public function import(Request $request)
     | READ HEADER ROW
     |--------------------------------------------------------------------------
     */
+
+    // Skip a UTF-8 BOM first, otherwise a quoted first heading keeps its quotes.
+    if (fread($handle, 3) !== "\xEF\xBB\xBF") {
+        rewind($handle);
+    }
 
     $headers = fgetcsv($handle);
 

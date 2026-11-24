@@ -325,6 +325,12 @@ Route::post('/admin-users/{user}/reset-password', [
     ])->name('employees.import');
 
 
+    Route::get('/employees/import/template', [
+        EmployeeController::class,
+        'importTemplate'
+    ])->name('employees.import.template');
+
+
     Route::post('/employees/import', [
         EmployeeController::class,
         'import'
