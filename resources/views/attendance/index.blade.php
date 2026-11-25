@@ -181,6 +181,12 @@
             transition: background .15s ease;
         }
 
+        .face-recognition-button svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
         .face-recognition-button:hover:not(:disabled) {
             background: var(--blue-dark);
         }

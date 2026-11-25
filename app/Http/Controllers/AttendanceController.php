@@ -1333,10 +1333,7 @@ public function signIn(Request $request)
         |--------------------------------------------------------------------------
         */
 
-        $date = $request->input(
-            'date',
-            Carbon::today()->format('Y-m-d')
-        );
+        $date = $this->historyDate($request);
 
         /*
         |--------------------------------------------------------------------------
@@ -1350,16 +1347,203 @@ public function signIn(Request $request)
             ->orderBy('name')
             ->get();
 
+        $attendance = $this->historyRows($request, $date);
+
         /*
         |--------------------------------------------------------------------------
-        | GET ACTIVE EMPLOYEES
+        | DEPARTMENTS
         |--------------------------------------------------------------------------
         */
 
-        $employees = Employee::where(
+        $departments = Employee::where(
             'status',
             'Active'
         )
+            ->when(
+                $selectedSiteId,
+                function ($query) use ($selectedSiteId) {
+
+                    $query->where(
+                        'site_id',
+                        $selectedSiteId
+                    );
+                }
+            )
+            ->whereNotNull('department')
+            ->where(
+                'department',
+                '!=',
+                ''
+            )
+            ->distinct()
+            ->orderBy('department')
+            ->pluck('department');
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUMMARY
+        |--------------------------------------------------------------------------
+        */
+
+        $totalRecords =
+            $attendance->count();
+
+        $present =
+            $attendance
+                ->where(
+                    'status',
+                    'Present'
+                )
+                ->count();
+
+        $late =
+            $attendance
+                ->where(
+                    'status',
+                    'Late'
+                )
+                ->count();
+
+        $absent =
+            $attendance
+                ->where(
+                    'status',
+                    'Absent'
+                )
+                ->count();
+
+        $leave =
+            $attendance
+                ->where(
+                    'status',
+                    'Leave'
+                )
+                ->count();
+
+        $checkedOut =
+            $attendance
+                ->whereNotNull(
+                    'check_out'
+                )
+                ->count();
+
+        $totalOutings =
+            $attendance->sum(
+                function ($record) {
+
+                    return $record
+                        ->outings
+                        ->count();
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN HISTORY VIEW
+        |--------------------------------------------------------------------------
+        */
+
+        return view(
+            'attendance.history',
+            compact(
+                'attendance',
+                'departments',
+                'date',
+                'totalRecords',
+                'present',
+                'late',
+                'absent',
+                'leave',
+                'checkedOut',
+                'totalOutings',
+                'sites',
+                'selectedSiteId'
+            )
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOWNLOAD ATTENDANCE HISTORY - PDF
+    |--------------------------------------------------------------------------
+    */
+
+    public function downloadAttendancePdf(Request $request)
+    {
+        // A large site needs more than PHP's default 128 MB in dompdf.
+        ini_set('memory_limit', '512M');
+        set_time_limit(120);
+
+        $date = $this->historyDate($request);
+        $displayDate = Carbon::parse($date)->format('d/m/Y');
+
+        return Pdf::loadView('attendance.pdf.history', [
+            'attendances' => $this->historyRows($request, $date),
+            'generatedAt' => now(),
+            'dateFrom' => $displayDate,
+            'dateTo' => $displayDate,
+        ])
+            ->setPaper('a4', 'landscape')
+            ->download("attendance-history-{$date}.pdf");
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOWNLOAD ATTENDANCE HISTORY - EXCEL
+    |--------------------------------------------------------------------------
+    */
+
+    public function downloadAttendanceExcel(Request $request)
+    {
+        $date = $this->historyDate($request);
+
+        return Excel::download(
+            new AttendanceHistoryExport($this->historyRows($request, $date)),
+            "attendance-history-{$date}.xlsx"
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | HISTORY ROWS (SHARED BY THE PAGE AND BOTH DOWNLOADS)
+    |--------------------------------------------------------------------------
+    */
+
+    private function historyDate(Request $request): string
+    {
+        $date = $request->input('date');
+
+        // Also rejects dates that do not exist, such as 31 February.
+        return is_string($date)
+            && preg_match('/^([12]\d{3})-(\d{2})-(\d{2})$/', $date, $part)
+            && checkdate((int) $part[2], (int) $part[3], (int) $part[1])
+            ? $date
+            : Carbon::today()->format('Y-m-d');
+    }
+
+    private function historyRows(Request $request, string $date)
+    {
+        $selectedSiteId = $request->input('site_id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | GET EMPLOYEES
+        |--------------------------------------------------------------------------
+        */
+
+        // Anyone who attended that day is kept, even if they have been made
+        // inactive since.
+        $employees = Employee::where(function ($query) use ($date) {
+
+            $query->where('status', 'Active')
+                ->orWhereHas('attendances', function ($query) use ($date) {
+
+                    $query->whereDate('attendance_date', $date);
+                });
+        })
             ->when(
                 $selectedSiteId,
                 function ($query) use ($selectedSiteId) {
@@ -1528,7 +1712,7 @@ public function signIn(Request $request)
         |--------------------------------------------------------------------------
         */
 
-        $attendance = $attendance
+        return $attendance
             ->sortBy(function ($record) {
 
                 return $record->check_in
@@ -1536,325 +1720,7 @@ public function signIn(Request $request)
                     : PHP_INT_MAX;
             })
             ->values();
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPARTMENTS
-        |--------------------------------------------------------------------------
-        */
-
-        $departments = Employee::where(
-            'status',
-            'Active'
-        )
-            ->when(
-                $selectedSiteId,
-                function ($query) use ($selectedSiteId) {
-
-                    $query->where(
-                        'site_id',
-                        $selectedSiteId
-                    );
-                }
-            )
-            ->whereNotNull('department')
-            ->where(
-                'department',
-                '!=',
-                ''
-            )
-            ->distinct()
-            ->orderBy('department')
-            ->pluck('department');
-
-        /*
-        |--------------------------------------------------------------------------
-        | SUMMARY
-        |--------------------------------------------------------------------------
-        */
-
-        $totalRecords =
-            $attendance->count();
-
-        $present =
-            $attendance
-                ->where(
-                    'status',
-                    'Present'
-                )
-                ->count();
-
-        $late =
-            $attendance
-                ->where(
-                    'status',
-                    'Late'
-                )
-                ->count();
-
-        $absent =
-            $attendance
-                ->where(
-                    'status',
-                    'Absent'
-                )
-                ->count();
-
-        $leave =
-            $attendance
-                ->where(
-                    'status',
-                    'Leave'
-                )
-                ->count();
-
-        $checkedOut =
-            $attendance
-                ->whereNotNull(
-                    'check_out'
-                )
-                ->count();
-
-        $totalOutings =
-            $attendance->sum(
-                function ($record) {
-
-                    return $record
-                        ->outings
-                        ->count();
-                }
-            );
-
-        /*
-        |--------------------------------------------------------------------------
-        | RETURN HISTORY VIEW
-        |--------------------------------------------------------------------------
-        */
-
-        return view(
-            'attendance.history',
-            compact(
-                'attendance',
-                'departments',
-                'date',
-                'totalRecords',
-                'present',
-                'late',
-                'absent',
-                'leave',
-                'checkedOut',
-                'totalOutings',
-                'sites',
-                'selectedSiteId'
-            )
-        );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DOWNLOAD ATTENDANCE HISTORY - PDF
-    |--------------------------------------------------------------------------
-    */
-
-    public function downloadAttendancePdf(Request $request)
-    {
-        $query = Attendance::with([
-            'employee',
-            'outings'
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | DATE FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('date')) {
-
-            $query->whereDate(
-                'attendance_date',
-                $request->date
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | SITE FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('site_id')) {
-
-            $query->whereHas(
-                'employee',
-                function ($query) use ($request) {
-
-                    $query->where(
-                        'site_id',
-                        $request->site_id
-                    );
-                }
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | EMPLOYEE SEARCH
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('search')) {
-
-            $search = $request->search;
-
-            $query->whereHas(
-                'employee',
-                function ($query) use ($search) {
-
-                    $query->where(function ($q) use ($search) {
-
-                        $q->where(
-                            'name',
-                            'like',
-                            '%' . $search . '%'
-                        )
-                        ->orWhere(
-                            'employee_code',
-                            'like',
-                            '%' . $search . '%'
-                        );
-                    });
-                }
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPARTMENT FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('department')) {
-
-            $query->whereHas(
-                'employee',
-                function ($query) use ($request) {
-
-                    $query->where(
-                        'department',
-                        $request->department
-                    );
-                }
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | STATUS FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('status')) {
-
-            $query->where(
-                'status',
-                $request->status
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | GET ATTENDANCE RECORDS
-        |--------------------------------------------------------------------------
-        */
-
-        $attendances = $query
-            ->orderBy('attendance_date')
-            ->orderBy('check_in')
-            ->get();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | PDF VARIABLES
-        |--------------------------------------------------------------------------
-        */
-
-        $generatedAt = now();
-
-        $dateFrom = $request->input('date');
-
-        $dateTo = $request->input('date');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | GENERATE PDF
-        |--------------------------------------------------------------------------
-        */
-
-        $pdf = Pdf::loadView(
-            'attendance.pdf.history',
-            [
-                'attendances' => $attendances,
-                'generatedAt' => $generatedAt,
-                'dateFrom' => $dateFrom,
-                'dateTo' => $dateTo,
-            ]
-        );
-
-
-        $pdf->setPaper(
-            'a4',
-            'landscape'
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILE NAME
-        |--------------------------------------------------------------------------
-        */
-
-        $filename = 'attendance-history-' .
-            ($dateFrom ?: now()->format('Y-m-d')) .
-            '.pdf';
-
-
-        return $pdf->download($filename);
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DOWNLOAD ATTENDANCE HISTORY - EXCEL
-    |--------------------------------------------------------------------------
-    */
-
-    public function downloadAttendanceExcel(Request $request)
-    {
-        $date = $request->input('date');
-
-        if ($date) {
-
-            $filename = 'attendance-history-' .
-                Carbon::parse($date)->format('Y-m-d') .
-                '.xlsx';
-
-        } else {
-
-            $filename = 'attendance-history-' .
-                Carbon::now()->format('Y-m-d-His') .
-                '.xlsx';
-        }
-
-        return Excel::download(
-            new AttendanceHistoryExport($request),
-            $filename
-        );
-    }
-
 
     /*
     |--------------------------------------------------------------------------

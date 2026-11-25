@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\AdminUserController;
@@ -289,6 +290,23 @@ Route::post('/admin-users/{user}/reset-password', [
         AttendanceController::class,
         'outingHistory'
     ])->name('attendance.outings');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMPLOYEE REPORT (ONE PERSON, DATE RANGE)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/admin/reports/employee', [EmployeeReportController::class, 'index'])
+        ->name('reports.employee');
+
+    Route::get('/admin/reports/employee/pdf', [EmployeeReportController::class, 'pdf'])
+        ->name('reports.employee.pdf');
+
+    Route::get('/admin/reports/employee/excel', [EmployeeReportController::class, 'excel'])
+        ->name('reports.employee.excel');
+
 
         /*
     |--------------------------------------------------------------------------

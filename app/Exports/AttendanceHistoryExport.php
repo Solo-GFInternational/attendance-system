@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Attendance;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -18,115 +18,17 @@ class AttendanceHistoryExport implements
     ShouldAutoSize,
     WithStyles
 {
-    protected $request;
-
-    public function __construct($request)
+    /**
+     * @param  Collection  $rows  the same rows the Attendance History page shows
+     */
+    public function __construct(private Collection $rows)
     {
-        $this->request = $request;
     }
 
-    /**
-     * Get attendance records
-     */
     public function collection()
     {
-        $request = $this->request;
-
-        $query = Attendance::with([
-            'employee',
-            'outings',
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | DATE FILTER
-        |--------------------------------------------------------------------------
-        | The Attendance History page uses "date", so Excel must use the same.
-        */
-
-        if ($request->filled('date')) {
-
-            $query->whereDate(
-                'attendance_date',
-                $request->date
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | EMPLOYEE SEARCH
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('search')) {
-
-            $search = $request->search;
-
-            $query->whereHas(
-                'employee',
-                function ($q) use ($search) {
-
-                    $q->where(function ($employeeQuery) use ($search) {
-
-                        $employeeQuery
-                            ->where(
-                                'name',
-                                'like',
-                                '%' . $search . '%'
-                            )
-                            ->orWhere(
-                                'employee_code',
-                                'like',
-                                '%' . $search . '%'
-                            );
-
-                    });
-
-                }
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPARTMENT FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('department')) {
-
-            $query->whereHas(
-                'employee',
-                function ($q) use ($request) {
-
-                    $q->where(
-                        'department',
-                        $request->department
-                    );
-
-                }
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | STATUS FILTER
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->filled('status')) {
-
-            $query->where(
-                'status',
-                $request->status
-            );
-        }
-
-        return $query
-            ->orderBy('attendance_date', 'desc')
-            ->orderBy('check_in')
-            ->get();
+        return $this->rows;
     }
-
     /**
      * Excel headings
      */

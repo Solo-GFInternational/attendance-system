@@ -228,7 +228,7 @@
     margin: 0;
 }
 
-@media (max-width: 1399px) {
+@media (max-width: 1699px) {
     .gf-nav-actions .gf-nav-link span,
     .gf-nav-user-text {
         display: none;
@@ -243,7 +243,7 @@
     }
 }
 
-@media (max-width: 1099px) {
+@media (max-width: 1399px) {
     .gf-nav {
         flex-wrap: wrap;
         gap: 10px;

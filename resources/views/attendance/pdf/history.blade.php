@@ -313,7 +313,7 @@
                     <!-- Status -->
 
                     <td class="center
-                        {{ strtolower($attendance->status ?? '') === 'late'
+                        {{ in_array(strtolower($attendance->status ?? ''), ['late', 'absent'])
                             ? 'late'
                             : 'present'
                         }}"
