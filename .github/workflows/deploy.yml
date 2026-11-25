@@ -1,0 +1,185 @@
+# CD: deploys main to the attendance server (IIS site, app pool "attendance")
+# through a self-hosted GitHub Actions runner installed ON that server.
+#
+# Needs (see docs/DEPLOYMENT.md):
+#   - a runner labelled: self-hosted, windows, attendance-system
+#   - repo variable APP_PATH = the app folder on the server (a git clone of
+#     this repo), e.g. C:\inetpub\attendance-system
+#   - a "production" environment (optionally with a required reviewer)
+#   - the runner's Windows account must have a SQL login that can run
+#     migrations (the app pool's own login is read/write only)
+#
+# Manual only (Actions tab > deploy > Run workflow). The server pulls main
+# from GitHub itself; nothing is copied from a runner checkout.
+#
+# Kiosks get a "be right back" page while the site is down (about a minute),
+# so run it outside sign-in / sign-out rush times.
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_composer:
+        description: 'Run composer install even if composer.json/lock did not change'
+        type: boolean
+        default: false
+      force_assets:
+        description: 'Run npm ci + npm run build even if no front-end files changed'
+        type: boolean
+        default: false
+
+# Never run two deploys at once.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read   # to look up the tests run for the commit being deployed
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, windows, attendance-system]
+    environment: production
+    timeout-minutes: 30
+    env:
+      APP_POOL: 'attendance'
+      # The runner is a Windows service: nobody can answer a git sign-in prompt,
+      # so make git fail straight away instead of waiting until the job times out.
+      GIT_TERMINAL_PROMPT: '0'
+      GCM_INTERACTIVE: 'never'
+    defaults:
+      run:
+        shell: powershell
+        working-directory: ${{ vars.APP_PATH }}
+
+    steps:
+      - name: Check app folder
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Test-Path 'artisan')) { throw "APP_PATH '${{ vars.APP_PATH }}' is not the app folder" }
+          if (-not (Test-Path '.git')) { throw "APP_PATH '${{ vars.APP_PATH }}' is not a git clone - see docs/DEPLOYMENT.md" }
+          git status --short
+          "Currently deployed: $(git rev-parse HEAD)"
+
+      # Decide whether composer install and the asset build are needed.
+      # Fetches with this run's own GITHUB_TOKEN, not whatever GitHub sign-in is
+      # saved in the runner account's Credential Manager (which may belong to
+      # another repo and hang on an invisible sign-in prompt).
+      - name: See what's changing
+        id: changes
+        timeout-minutes: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN"))
+          git -c credential.helper= -c "http.extraheader=AUTHORIZATION: basic $auth" fetch origin main
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          $changed = @(git diff --name-only HEAD origin/main)
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          "$($changed.Count) file(s) changing: $(git rev-parse --short HEAD) -> $(git rev-parse --short origin/main)"
+          $changed | ForEach-Object { "  $_" }
+
+          $composer = [bool]($changed -match '^composer\.(json|lock)$') -or -not (Test-Path 'vendor\autoload.php')
+          # resources/ includes Blade views: Tailwind scans them for class names.
+          $assets = [bool]($changed -match '^(package(-lock)?\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|resources/)') -or -not (Test-Path 'public\build\manifest.json')
+
+          "composer install needed: $composer"
+          "asset build needed:      $assets"
+          Add-Content -Path $env:GITHUB_OUTPUT -Encoding ascii -Value "composer=$("$composer".ToLower())"
+          Add-Content -Path $env:GITHUB_OUTPUT -Encoding ascii -Value "assets=$("$assets".ToLower())"
+
+      # main isn't branch-protected, so this is the guard instead: refuse to
+      # deploy a commit whose tests.yml run didn't pass (build + SQL Server
+      # migrations). Runs before maintenance mode, so a refusal leaves the live
+      # site untouched.
+      - name: Check tests passed for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+          $sha = git rev-parse origin/main
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $short = $sha.Substring(0, 7)
+
+          $uri = "https://api.github.com/repos/${{ github.repository }}/actions/workflows/tests.yml/runs?head_sha=$sha&per_page=20"
+          $headers = @{
+            Authorization          = "Bearer $env:GH_TOKEN"
+            Accept                 = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          $runs = @((Invoke-RestMethod -Uri $uri -Headers $headers -UseBasicParsing).workflow_runs)
+
+          if ($runs | Where-Object { $_.conclusion -eq 'success' }) {
+            "tests passed for $short"
+            exit 0
+          }
+          if ($runs | Where-Object { $_.status -ne 'completed' }) {
+            throw "Tests are still running for $short. Run the deploy again once they finish."
+          }
+          if ($runs.Count -gt 0) {
+            throw "Tests did not pass for $short ($(($runs.conclusion | Sort-Object -Unique) -join ', ')). Fix main before deploying."
+          }
+          throw "No tests run found for $short. Push or re-run tests on main before deploying."
+
+      # Remember the current commit so a rollback is one command.
+      - name: Record previous commit
+        run: |
+          git rev-parse HEAD | Out-File -Encoding ascii storage\app\last-deploy-previous-commit.txt
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Maintenance mode on
+        id: down
+        run: |
+          php artisan down --retry=60
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      # Exactly the commit checked above, not a fresh pull.
+      - name: Update to main
+        run: |
+          git merge --ff-only origin/main
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          "Now at: $(git rev-parse HEAD)"
+
+      - name: Composer install
+        if: steps.changes.outputs.composer == 'true' || inputs.force_composer
+        run: |
+          composer install --optimize-autoloader --no-interaction
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Build assets
+        if: steps.changes.outputs.assets == 'true' || inputs.force_assets
+        run: |
+          npm ci
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm run build
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Migrate
+        run: |
+          php artisan migrate --force
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      - name: Rebuild caches
+        run: |
+          php artisan optimize:clear
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          php artisan optimize
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+      # No queue worker / scheduler step: this app has neither.
+      - name: Recycle IIS app pool
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module WebAdministration
+          Restart-WebAppPool -Name $env:APP_POOL
+
+      # Always bring the site back up, even if a step above failed.
+      - name: Maintenance mode off
+        if: always() && steps.down.outcome == 'success'
+        run: |
+          php artisan up
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
