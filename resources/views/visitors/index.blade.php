@@ -68,12 +68,12 @@
             padding: 16px;
             border: 1px solid var(--border);
             border-radius: 14px;
-            background: #fbfcfe;
+            background: var(--subtle);
         }
 
         .visitor-old {
-            border-color: #f2cf8c;
-            background: #fffbf2;
+            border-color: var(--amber-border);
+            background: var(--amber-soft);
         }
 
         .visitor-avatar {
@@ -120,7 +120,7 @@
         .visitor-purpose {
             margin-top: 8px;
             font-size: 14px;
-            color: #374151;
+            color: var(--text-2);
             line-height: 1.45;
         }
 
@@ -149,8 +149,8 @@
             padding: 10px 12px;
             border-radius: 10px;
             background: var(--amber-soft);
-            border: 1px solid #f6dca6;
-            color: #7c4a03;
+            border: 1px solid var(--amber-border);
+            color: var(--amber-text);
             font-size: 13px;
             line-height: 1.5;
         }
@@ -173,8 +173,8 @@
             height: 56px;
             margin: 0 auto 12px;
             border-radius: 16px;
-            background: #f3f5f9;
-            color: #94a3b8;
+            background: var(--hover);
+            color: var(--faint);
         }
 
         .no-visitors-icon svg {

@@ -9,13 +9,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Report</title>
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        body { background: #f5f7fa; }
         .report-card { border: 0; border-radius: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, .04); }
-        .report-table th { font-size: 13px; color: #6c757d; white-space: nowrap; }
-        .report-table .no-record td { color: #6c757d; background: #fafbfc; }
-        .report-stat { border: 1px solid #e9ecef; border-radius: 10px; padding: 12px 14px; height: 100%; }
+        .report-table th { font-size: 13px; color: var(--gf-muted); white-space: nowrap; }
+        .report-table .no-record td { color: var(--gf-muted); background: var(--gf-subtle); }
+        .report-stat { border: 1px solid var(--gf-border); border-radius: 10px; padding: 12px 14px; height: 100%; }
         .report-stat strong { display: block; font-size: 1.4rem; }
     </style>
 </head>

@@ -9,6 +9,7 @@
 
     <title>Import Employees</title>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -23,16 +24,16 @@
         }
 
         .upload-area {
-            border: 2px dashed #ced4da;
+            border: 2px dashed var(--gf-border-strong);
             border-radius: 14px;
             padding: 40px 25px;
             text-align: center;
-            background: #fafbfc;
+            background: var(--gf-subtle);
         }
 
         .upload-area:hover {
-            border-color: #0d6efd;
-            background: #f5f9ff;
+            border-color: var(--gf-primary);
+            background: var(--gf-primary-soft);
         }
     </style>
 </head>

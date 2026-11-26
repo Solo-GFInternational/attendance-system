@@ -170,7 +170,7 @@
 
         .total-people  { --accent: var(--blue); }
         .in-office     { --accent: var(--green); }
-        .out           { --accent: #c2570c; }
+        .out           { --accent: var(--orange); }
         .visitors-card { --accent: var(--violet); }
         .not-signed    { --accent: var(--red); }
 
@@ -201,7 +201,7 @@
         }
 
         th {
-            background: #f8fafc;
+            background: var(--subtle);
             color: var(--muted);
             padding: 12px 20px;
             text-align: left;
@@ -215,7 +215,7 @@
 
         td {
             padding: 14px 20px;
-            border-bottom: 1px solid #eef1f5;
+            border-bottom: 1px solid var(--border);
             font-size: 15px;
             vertical-align: middle;
         }
@@ -225,7 +225,7 @@
         }
 
         tbody tr:hover {
-            background: #fafbfd;
+            background: var(--subtle);
         }
 
         .employee-name,
@@ -259,19 +259,19 @@
         }
 
         .status-in       { background: var(--green-soft);  color: var(--green); }
-        .status-out      { background: #fdf0e6;            color: #b4530a; }
+        .status-out      { background: var(--orange-soft); color: var(--orange); }
         .status-not      { background: var(--red-soft);    color: var(--red); }
-        .status-checkout { background: #eef1f5;            color: #4b5563; }
+        .status-checkout { background: var(--hover);       color: var(--text-2); }
         .status-visitor  { background: var(--violet-soft); color: var(--violet); }
 
         .outing-info {
             font-size: 13px;
-            color: #9a4a0b;
+            color: var(--orange);
             line-height: 1.5;
         }
 
         .muted {
-            color: #9aa5b5;
+            color: var(--faint);
         }
 
         .visitor-purpose {

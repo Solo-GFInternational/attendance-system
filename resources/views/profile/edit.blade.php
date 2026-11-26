@@ -3,7 +3,7 @@
     <x-slot name="header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="mb-1 fw-bold text-dark">
+                <h2 class="mb-1 fw-bold">
                     Profile
                 </h2>
                 <p class="mb-0 text-muted small">
@@ -29,7 +29,7 @@
                                 style="
                                     width:60px;
                                     height:60px;
-                                    background:#f1f5f9;
+                                    background:var(--gf-hover);
                                     font-size:26px;
                                 "
                             >
@@ -56,7 +56,7 @@
             {{-- Profile Information --}}
             <div class="card border-0 shadow-sm mb-4">
 
-                <div class="card-header bg-white border-bottom py-3">
+                <div class="card-header border-bottom py-3">
 
                     <div class="d-flex align-items-center">
 
@@ -65,8 +65,8 @@
                             style="
                                 width:42px;
                                 height:42px;
-                                background:#eff6ff;
-                                color:#2563eb;
+                                background:var(--gf-primary-soft);
+                                color:var(--gf-primary);
                                 font-size:18px;
                             "
                         >
@@ -103,7 +103,7 @@
             {{-- Password --}}
             <div class="card border-0 shadow-sm mb-4">
 
-                <div class="card-header bg-white border-bottom py-3">
+                <div class="card-header border-bottom py-3">
 
                     <div class="d-flex align-items-center">
 
@@ -112,8 +112,8 @@
                             style="
                                 width:42px;
                                 height:42px;
-                                background:#fef3c7;
-                                color:#d97706;
+                                background:var(--gf-warning-soft);
+                                color:var(--gf-warning);
                                 font-size:18px;
                             "
                         >
@@ -150,7 +150,7 @@
             {{-- Delete Account --}}
             <div class="card border-0 shadow-sm mb-4">
 
-                <div class="card-header bg-white border-bottom py-3">
+                <div class="card-header border-bottom py-3">
 
                     <div class="d-flex align-items-center">
 
@@ -159,8 +159,8 @@
                             style="
                                 width:42px;
                                 height:42px;
-                                background:#fef2f2;
-                                color:#dc2626;
+                                background:var(--gf-danger-soft);
+                                color:var(--gf-danger);
                                 font-size:18px;
                             "
                         >
@@ -206,13 +206,15 @@
 
         .profile-form label {
             font-weight: 600;
-            color: #374151;
+            color: var(--gf-text-2);
             margin-bottom: 6px;
         }
 
         .profile-form input {
             width: 100%;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--gf-border-strong);
+            background: var(--gf-surface);
+            color: var(--gf-text);
             border-radius: 8px;
             padding: 10px 12px;
             font-size: 14px;
@@ -220,7 +222,7 @@
         }
 
         .profile-form input:focus {
-            border-color: #2563eb;
+            border-color: var(--gf-primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
             outline: none;
         }

@@ -32,9 +32,14 @@
             </span>
         </a>
 
-        <div class="k-now">
-            <div class="k-now-time" id="liveClock">{{ now()->format('h:i A') }}</div>
-            <div class="k-now-date" id="liveDate">{{ now()->format('l j F Y') }}</div>
+        <div class="k-topbar-end">
+            {{-- Left of the clock: the home page has a hidden admin tap area over the top-right corner. --}}
+            @include('partials.theme-toggle', ['class' => 'k-theme-toggle'])
+
+            <div class="k-now">
+                <div class="k-now-time" id="liveClock">{{ now()->format('h:i A') }}</div>
+                <div class="k-now-date" id="liveDate">{{ now()->format('l j F Y') }}</div>
+            </div>
         </div>
 
     </div>

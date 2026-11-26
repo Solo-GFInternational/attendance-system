@@ -8,25 +8,111 @@
 | are not affected. Selectors are prefixed with .admin-ui so they win over
 | the older per-page <style> blocks without needing !important.
 |
+| Light / dark mode: colours are the --gf-* tokens below. The dark values
+| apply when <html data-theme="dark"> (set by partials/theme-init, which
+| also sets data-coreui-theme so CoreUI's own components follow).
+|
 */
 
-.admin-ui {
+:root {
     --gf-bg: #f4f6f9;
     --gf-surface: #ffffff;
+    --gf-subtle: #f8fafc;
+    --gf-hover: #f1f4f9;
     --gf-border: #e3e7ee;
     --gf-border-strong: #cfd6e1;
     --gf-text: #1f2937;
+    --gf-text-2: #374151;
     --gf-muted: #6b7280;
+    --gf-faint: #9ca3af;
     --gf-primary: #1f5fd6;
     --gf-primary-hover: #194fb3;
     --gf-primary-soft: #eaf1fd;
+    --gf-primary-border: #c9d9f7;
     --gf-danger: #c62f3b;
     --gf-danger-soft: #fdecee;
+    --gf-danger-border: #f1c4c8;
+    --gf-success-soft: #ecfdf3;
+    --gf-success-border: #b7ebc8;
+    --gf-success-text: #14663a;
+    --gf-danger-text: #9b1c27;
+    --gf-warning: #b45309;
+    --gf-warning-soft: #fffaeb;
+    --gf-warning-border: #fde7a7;
+    --gf-warning-text: #8a5a00;
+    --gf-info-text: #1d4aa3;
     --gf-radius: 12px;
     --gf-radius-sm: 8px;
     --gf-shadow: 0 1px 2px rgba(16, 24, 40, .05);
     --gf-shadow-md: 0 4px 12px rgba(16, 24, 40, .06);
+}
 
+[data-theme="dark"] {
+    --gf-bg: #0d1117;
+    --gf-surface: #161b24;
+    --gf-subtle: #1b212c;
+    --gf-hover: #222a36;
+    --gf-border: #2a3240;
+    --gf-border-strong: #3a4454;
+    --gf-text: #e6e9ef;
+    --gf-text-2: #c7ced9;
+    --gf-muted: #98a3b4;
+    --gf-faint: #6b7686;
+    --gf-primary: #4d8dff;
+    --gf-primary-hover: #6aa0ff;
+    --gf-primary-soft: rgba(80, 140, 255, .14);
+    --gf-primary-border: rgba(80, 140, 255, .38);
+    --gf-danger: #f0707a;
+    --gf-danger-soft: rgba(240, 90, 100, .14);
+    --gf-danger-border: rgba(240, 90, 100, .40);
+    --gf-success-soft: rgba(52, 199, 110, .14);
+    --gf-success-border: rgba(52, 199, 110, .38);
+    --gf-success-text: #7ddca2;
+    --gf-danger-text: #ff9ea6;
+    --gf-warning: #f5b544;
+    --gf-warning-soft: rgba(245, 170, 40, .14);
+    --gf-warning-border: rgba(245, 170, 40, .38);
+    --gf-warning-text: #f5c66b;
+    --gf-info-text: #9cc0ff;
+    --gf-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    --gf-shadow-md: 0 4px 12px rgba(0, 0, 0, .35);
+
+    /* CoreUI's own components (cards, modals, dropdowns, tables) */
+    --cui-body-bg: var(--gf-bg);
+    --cui-body-color: var(--gf-text);
+    --cui-border-color: var(--gf-border);
+    --cui-secondary-color: var(--gf-muted);
+    --cui-tertiary-bg: var(--gf-subtle);
+    --cui-secondary-bg: var(--gf-hover);
+    --cui-emphasis-color: #ffffff;
+    --cui-link-color: var(--gf-primary);
+    --cui-link-hover-color: var(--gf-primary-hover);
+    --cui-link-color-rgb: 77, 141, 255;
+    --cui-link-hover-color-rgb: 106, 160, 255;
+
+    /* CoreUI's dark theme keeps the light pastel tints for bg-*-subtle and
+       dark text for text-*-emphasis, so badges and stat icons need these. */
+    --cui-primary-bg-subtle: rgba(80, 140, 255, .16);
+    --cui-secondary-bg-subtle: rgba(160, 170, 190, .14);
+    --cui-success-bg-subtle: rgba(52, 199, 110, .16);
+    --cui-info-bg-subtle: rgba(60, 170, 255, .16);
+    --cui-warning-bg-subtle: rgba(245, 170, 40, .16);
+    --cui-danger-bg-subtle: rgba(240, 90, 100, .16);
+    --cui-primary-border-subtle: rgba(80, 140, 255, .40);
+    --cui-secondary-border-subtle: rgba(160, 170, 190, .32);
+    --cui-success-border-subtle: rgba(52, 199, 110, .40);
+    --cui-info-border-subtle: rgba(60, 170, 255, .40);
+    --cui-warning-border-subtle: rgba(245, 170, 40, .40);
+    --cui-danger-border-subtle: rgba(240, 90, 100, .40);
+    --cui-primary-text-emphasis: #9cc0ff;
+    --cui-secondary-text-emphasis: #c7ced9;
+    --cui-success-text-emphasis: #7ddca2;
+    --cui-info-text-emphasis: #8fd0ff;
+    --cui-warning-text-emphasis: #f5c66b;
+    --cui-danger-text-emphasis: #ff9ea6;
+}
+
+.admin-ui {
     background: var(--gf-bg) !important;
     color: var(--gf-text);
     font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
@@ -43,12 +129,12 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    background: #ffffff;
-    border: 1px solid #e3e7ee;
+    background: var(--gf-surface);
+    border: 1px solid var(--gf-border);
     border-radius: 12px;
     padding: 8px 10px 8px 14px;
     margin-bottom: 24px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    box-shadow: var(--gf-shadow);
     font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -76,13 +162,13 @@
 }
 
 .gf-nav-brand-text strong {
-    color: #1f2937;
+    color: var(--gf-text);
     font-size: 14px;
     font-weight: 700;
 }
 
 .gf-nav-brand-text span {
-    color: #6b7280;
+    color: var(--gf-muted);
     font-size: 12px;
 }
 
@@ -110,7 +196,7 @@
     border: 1px solid transparent;
     border-radius: 8px;
     background: transparent;
-    color: #4b5563;
+    color: var(--gf-text-2);
     font-family: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -122,18 +208,18 @@
 }
 
 .gf-nav-link:hover {
-    background: #f1f4f9;
-    color: #1f2937;
+    background: var(--gf-hover);
+    color: var(--gf-text);
 }
 
 .gf-nav-link.active {
-    background: #eaf1fd;
-    color: #1f5fd6;
+    background: var(--gf-primary-soft);
+    color: var(--gf-primary);
 }
 
 .gf-nav-link:focus-visible,
 .gf-nav-user:focus-visible {
-    outline: 2px solid #1f5fd6;
+    outline: 2px solid var(--gf-primary);
     outline-offset: 2px;
 }
 
@@ -152,26 +238,26 @@
 
 /* Add User: same shape as the other links, outlined in the brand colour */
 .gf-nav-link-primary {
-    border-color: #c9d9f7;
-    color: #1f5fd6;
+    border-color: var(--gf-primary-border);
+    color: var(--gf-primary);
 }
 
 .gf-nav-link-primary:hover,
 .gf-nav-link-primary.active {
-    background: #eaf1fd;
-    border-color: #1f5fd6;
-    color: #1f5fd6;
+    background: var(--gf-primary-soft);
+    border-color: var(--gf-primary);
+    color: var(--gf-primary);
 }
 
 .gf-nav-link-danger:hover {
-    background: #fdecee;
-    color: #c62f3b;
+    background: var(--gf-danger-soft);
+    color: var(--gf-danger);
 }
 
 .gf-nav-divider {
     width: 1px;
     height: 24px;
-    background: #e3e7ee;
+    background: var(--gf-border);
     margin: 0 6px;
 }
 
@@ -188,7 +274,7 @@
 
 .gf-nav-user:hover,
 .gf-nav-user.active {
-    background: #f1f4f9;
+    background: var(--gf-hover);
 }
 
 .gf-nav-avatar {
@@ -197,8 +283,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #e8edf5;
-    color: #374151;
+    background: var(--gf-hover);
+    color: var(--gf-text-2);
     font-size: 12px;
     font-weight: 700;
 }
@@ -210,7 +296,7 @@
 }
 
 .gf-nav-user-text strong {
-    color: #1f2937;
+    color: var(--gf-text);
     font-size: 13px;
     font-weight: 600;
     max-width: 140px;
@@ -220,7 +306,7 @@
 }
 
 .gf-nav-user-text span {
-    color: #6b7280;
+    color: var(--gf-muted);
     font-size: 12px;
 }
 
@@ -256,7 +342,7 @@
     .gf-nav-links {
         order: 3;
         flex-basis: 100%;
-        border-top: 1px solid #e3e7ee;
+        border-top: 1px solid var(--gf-border);
         padding-top: 8px;
     }
 }
@@ -352,7 +438,7 @@
 }
 
 .admin-ui .info-box {
-    background: #f8fafc;
+    background: var(--gf-subtle);
     border: 1px solid var(--gf-border);
     border-left: 3px solid var(--gf-primary);
     border-radius: var(--gf-radius-sm);
@@ -371,7 +457,7 @@
 
 .admin-ui .table > thead th,
 .admin-ui .table-light th {
-    background: #f8fafc !important;
+    background: var(--gf-subtle) !important;
     color: var(--gf-muted);
     font-size: 12px;
     font-weight: 600;
@@ -386,14 +472,14 @@
 .admin-ui .table > tbody td {
     padding-top: 13px;
     padding-bottom: 13px;
-    border-color: #eef1f5;
+    border-color: var(--gf-border);
     vertical-align: middle;
 }
 
 .admin-ui .table-hover > tbody > tr:hover > * {
-    background-color: #f8fafc;
-    --cui-table-accent-bg: #f8fafc;
-    --bs-table-accent-bg: #f8fafc;
+    background-color: var(--gf-subtle);
+    --cui-table-accent-bg: var(--gf-subtle);
+    --bs-table-accent-bg: var(--gf-subtle);
 }
 
 .admin-ui .card > .card-body.p-0 .table-responsive,
@@ -440,7 +526,7 @@
 
 .admin-ui .btn-outline-primary {
     color: var(--gf-primary);
-    border-color: #c9d9f7;
+    border-color: var(--gf-primary-border);
 }
 
 .admin-ui .btn-outline-primary:hover {
@@ -450,20 +536,20 @@
 }
 
 .admin-ui .btn-outline-secondary {
-    color: #374151;
+    color: var(--gf-text-2);
     border-color: var(--gf-border-strong);
-    background: #ffffff;
+    background: var(--gf-surface);
 }
 
 .admin-ui .btn-outline-secondary:hover {
-    background: #f1f4f9;
+    background: var(--gf-hover);
     color: var(--gf-text);
     border-color: var(--gf-border-strong);
 }
 
 .admin-ui .btn-outline-danger {
     color: var(--gf-danger);
-    border-color: #f1c4c8;
+    border-color: var(--gf-danger-border);
 }
 
 .admin-ui .btn-outline-danger:hover {
@@ -481,7 +567,7 @@
 .admin-ui .filter-label {
     font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: var(--gf-text-2);
     margin-bottom: 6px;
 }
 
@@ -492,7 +578,7 @@
     font-size: 14px;
     min-height: 40px;
     color: var(--gf-text);
-    background-color: #ffffff;
+    background-color: var(--gf-surface);
 }
 
 .admin-ui .form-control:focus,
@@ -531,27 +617,27 @@
 }
 
 .admin-ui .alert-success {
-    background: #ecfdf3;
-    border-color: #b7ebc8;
-    color: #14663a;
+    background: var(--gf-success-soft);
+    border-color: var(--gf-success-border);
+    color: var(--gf-success-text);
 }
 
 .admin-ui .alert-danger {
     background: var(--gf-danger-soft);
-    border-color: #f5c2c7;
-    color: #9b1c27;
+    border-color: var(--gf-danger-border);
+    color: var(--gf-danger-text);
 }
 
 .admin-ui .alert-warning {
-    background: #fffaeb;
-    border-color: #fde7a7;
-    color: #8a5a00;
+    background: var(--gf-warning-soft);
+    border-color: var(--gf-warning-border);
+    color: var(--gf-warning-text);
 }
 
 .admin-ui .alert-info {
     background: var(--gf-primary-soft);
-    border-color: #c9d9f7;
-    color: #1d4aa3;
+    border-color: var(--gf-primary-border);
+    color: var(--gf-info-text);
 }
 
 
@@ -561,8 +647,163 @@
 
 .admin-ui .footer,
 .admin-ui .text-center.text-muted.small.mt-4 {
-    color: #9ca3af !important;
+    color: var(--gf-faint) !important;
     font-size: 12.5px;
     background: transparent;
     border: 0;
+}
+
+/* =========================================================
+   LIGHT / DARK MODE BUTTON
+   (partials/theme-toggle; the moon/sun swap is in partials/theme-init)
+   ========================================================= */
+
+.gf-theme-toggle {
+    padding: 0 10px;
+}
+
+/* Login / register pages: no nav bar, so the button floats top-right */
+.gf-theme-float {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1030;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--gf-border);
+    border-radius: 10px;
+    background: var(--gf-surface);
+    color: var(--gf-text-2);
+    box-shadow: var(--gf-shadow-md);
+    cursor: pointer;
+}
+
+.gf-theme-float:hover {
+    background: var(--gf-hover);
+}
+
+.gf-theme-float:focus-visible {
+    outline: 2px solid var(--gf-primary);
+    outline-offset: 2px;
+}
+
+.gf-theme-float svg {
+    width: 19px;
+    height: 19px;
+}
+
+
+/* =========================================================
+   OLDER PAGE CLASSES
+   Several pages still carry their own <style> with fixed light
+   colours for these; the .admin-ui prefix wins over them.
+   ========================================================= */
+
+.admin-ui .employee-avatar,
+.admin-ui .admin-avatar {
+    background: var(--gf-hover);
+    color: var(--gf-text-2);
+}
+
+.admin-ui .admin-avatar,
+.admin-ui .account-badge {
+    background: var(--gf-primary-soft);
+    color: var(--gf-primary);
+}
+
+.admin-ui .record-count {
+    background: var(--gf-subtle);
+    color: var(--gf-text-2);
+    border-color: var(--gf-border);
+}
+
+.admin-ui .info-box {
+    background: var(--gf-subtle);
+    border-color: var(--gf-border);
+}
+
+.admin-ui .table {
+    --cui-table-bg: transparent;
+    --cui-table-color: var(--gf-text);
+    --cui-table-border-color: var(--gf-border);
+}
+
+/* Dashboard AI chat window */
+.admin-ui .ai-chat-window,
+.admin-ui .ai-chat-input-area,
+.admin-ui .ai-message-bubble,
+.admin-ui .ai-response-bubble,
+.admin-ui .ai-typing-bubble {
+    background: var(--gf-surface);
+    border-color: var(--gf-border);
+    color: var(--gf-text);
+}
+
+.admin-ui .ai-chat-messages,
+.admin-ui .ai-chat-suggestions {
+    background: var(--gf-subtle);
+}
+
+.admin-ui .ai-chat-input {
+    background: var(--gf-surface);
+    border-color: var(--gf-border-strong);
+    color: var(--gf-text);
+}
+
+
+/* =========================================================
+   DARK MODE: light-only Bootstrap / CoreUI utilities
+   ========================================================= */
+
+[data-theme="dark"] .admin-ui .badge.bg-light {
+    background: var(--gf-hover) !important;
+    color: var(--gf-text) !important;
+    border-color: var(--gf-border) !important;
+}
+
+[data-theme="dark"] .admin-ui .btn-light {
+    background: var(--gf-hover);
+    border-color: var(--gf-border-strong);
+    color: var(--gf-text);
+}
+
+[data-theme="dark"] .admin-ui .btn-light:hover {
+    background: var(--gf-border);
+    color: var(--gf-text);
+}
+
+[data-theme="dark"] .admin-ui .btn-outline-secondary {
+    color: var(--gf-text-2);
+}
+
+[data-theme="dark"] .admin-ui .modal-content,
+[data-theme="dark"] .admin-ui .dropdown-menu {
+    background: var(--gf-surface);
+    border-color: var(--gf-border);
+    color: var(--gf-text);
+}
+
+[data-theme="dark"] .admin-ui .modal-header,
+[data-theme="dark"] .admin-ui .modal-footer {
+    border-color: var(--gf-border);
+}
+
+[data-theme="dark"] .admin-ui .form-control::placeholder {
+    color: var(--gf-faint);
+}
+
+[data-theme="dark"] .admin-ui .form-control:disabled,
+[data-theme="dark"] .admin-ui .form-select:disabled,
+[data-theme="dark"] .admin-ui .form-control[readonly] {
+    background-color: var(--gf-subtle);
+    color: var(--gf-muted);
+}
+
+/* Logos and photos keep their own colours */
+[data-theme="dark"] .gf-nav-mark {
+    background: #ffffff;
+    padding: 2px;
 }

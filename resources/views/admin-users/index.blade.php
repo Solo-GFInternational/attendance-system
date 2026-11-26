@@ -10,6 +10,7 @@
 
     <title>Users | Attendance Management System</title>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>

@@ -10,13 +10,14 @@
 
     <title>Admin Registration | Attendance Management System</title>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e9eef5 100%);
+            background: var(--gf-bg);
         }
 
         .register-wrapper {
@@ -68,7 +69,7 @@
 
         .register-body {
             padding: 32px 35px 30px;
-            background: white;
+            background: var(--gf-surface);
         }
 
         .form-label {
@@ -129,6 +130,8 @@
 </head>
 
 <body>
+
+@include('partials.theme-toggle', ['class' => 'gf-theme-float'])
 
 <div class="register-wrapper">
 
