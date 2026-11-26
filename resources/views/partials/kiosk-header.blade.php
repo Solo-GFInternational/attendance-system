@@ -50,7 +50,7 @@
 
             @php $festive = \App\Support\FestiveTheme::current(); @endphp
             @if ($festive['isFestive'])
-                <div class="k-chip k-festive"><span aria-hidden="true">{{ $festive['emoji'] }}</span> {{ $festive['greeting'] }}</div>
+                <div class="k-chip k-festive">@if ($festive['emoji'])<span aria-hidden="true">{{ $festive['emoji'] }}</span> @endif{{ $festive['greeting'] }}</div>
             @endif
 
             @if (! empty($site))

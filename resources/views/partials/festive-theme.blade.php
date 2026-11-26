@@ -21,10 +21,12 @@
     }
 
     /* Tablet header band. Not the emergency page: it stays red for safety. */
+    /* Layers: pattern tile, then the band (for Custom with a photo: a dark wash, then the photo). */
     [data-festive] .k-hero:not(.is-emergency) {
         background-image: var(--festive-pattern), var(--festive-hero);
-        background-size: 120px 120px, cover;
-        background-repeat: repeat, no-repeat;
+        background-size: 120px 120px, cover, cover;
+        background-repeat: repeat, no-repeat, no-repeat;
+        background-position: 0 0, center, center;
     }
 
     [data-festive] .k-chip.k-festive {
@@ -53,7 +55,9 @@
         padding: 10px 16px;
         border-radius: 12px;
         background-image: var(--festive-pattern), var(--festive-hero);
-        background-size: 120px 120px, cover;
+        background-size: 120px 120px, cover, cover;
+        background-repeat: repeat, no-repeat, no-repeat;
+        background-position: 0 0, center, center;
         color: #ffffff;
         font-size: 14px;
         font-weight: 600;

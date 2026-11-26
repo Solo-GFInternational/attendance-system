@@ -119,7 +119,9 @@
 @php $gfFestive = \App\Support\FestiveTheme::current(); @endphp
 @if ($gfFestive['isFestive'])
     <div class="gf-festive-banner" role="note">
-        <span aria-hidden="true">{{ $gfFestive['emoji'] }}</span>
+        @if ($gfFestive['emoji'])
+            <span aria-hidden="true">{{ $gfFestive['emoji'] }}</span>
+        @endif
         <span>{{ $gfFestive['greeting'] }}</span>
         @if ($gfUser?->is_admin)
             <a href="{{ route('theme.edit') }}">Change theme</a>
