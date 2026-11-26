@@ -9,6 +9,7 @@ use App\Http\Controllers\VisitorController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\ThemeController;
 use App\Http\Middleware\RestoreKioskSite;
 use App\Models\Site;
 use Illuminate\Http\Request;
@@ -229,6 +230,18 @@ Route::post('/admin-users/{user}/reset-password', [
 ])
     ->middleware('admin')
     ->name('admin-users.reset-password');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FESTIVE THEME (ADMIN ONLY)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin/theme', [ThemeController::class, 'edit'])->name('theme.edit');
+        Route::put('/admin/theme', [ThemeController::class, 'update'])->name('theme.update');
+    });
 
 
 

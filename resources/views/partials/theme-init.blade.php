@@ -64,6 +64,7 @@
         });
     })();
 </script>
+@include('partials.festive-theme')
 <style>
     [data-theme="dark"] .theme-icon-moon,
     :root:not([data-theme="dark"]) .theme-icon-sun {
