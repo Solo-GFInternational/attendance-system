@@ -18,6 +18,20 @@ class FestiveTheme
 
     public const DEFAULT = 'professional';
 
+    /** The admin's own theme: photo, greeting and colour set on the Theme page. */
+    public const CUSTOM = 'custom';
+
+    public const CUSTOM_SETTING = 'festive_custom';
+
+    public const CUSTOM_DEFAULTS = [
+        'greeting' => 'Welcome to Goodman Fielder',
+        'color' => '#1f5fd6',
+        'photo' => null,
+    ];
+
+    /** Stored photo names look like custom-<20 hex>.jpg (see CustomThemePhoto). */
+    public const PHOTO_PATTERN = 'custom-[a-f0-9]{20}\.jpg';
+
     /**
      * hero       header band gradient (white text sits on it in both light and dark mode)
      * accent     accent colour on light pages / on dark pages
@@ -102,7 +116,7 @@ class FestiveTheme
     {
         $themes = [];
 
-        foreach (self::THEMES as $key => $theme) {
+        foreach (self::definitions() as $key => $theme) {
             $themes[$key] = self::shape($key, $theme);
         }
 
@@ -111,17 +125,19 @@ class FestiveTheme
 
     public static function keys(): array
     {
-        return array_keys(self::THEMES);
+        return array_keys(self::THEMES + [self::CUSTOM => true]);
     }
 
     /** Read once per request: the header, nav and styles all ask for it. */
     private static ?string $currentKey = null;
 
+    private static ?array $custom = null;
+
     public static function currentKey(): string
     {
         if (self::$currentKey === null) {
             $key = Setting::value(self::SETTING, self::DEFAULT);
-            self::$currentKey = isset(self::THEMES[$key]) ? $key : self::DEFAULT;
+            self::$currentKey = in_array($key, self::keys(), true) ? $key : self::DEFAULT;
         }
 
         return self::$currentKey;
@@ -133,15 +149,91 @@ class FestiveTheme
         self::$currentKey = null;
     }
 
-    /** For long-running processes and tests: read the setting again next time. */
+    /** The saved Custom theme settings, with defaults filled in. */
+    public static function customSettings(): array
+    {
+        if (self::$custom === null) {
+            $saved = json_decode((string) Setting::value(self::CUSTOM_SETTING), true);
+            $saved = is_array($saved) ? array_intersect_key($saved, self::CUSTOM_DEFAULTS) : [];
+            $custom = array_merge(self::CUSTOM_DEFAULTS, $saved);
+
+            // Never trust stored values blindly: they end up inside CSS.
+            if (! is_string($custom['color']) || ! preg_match('/^#[0-9a-fA-F]{6}$/', $custom['color'])) {
+                $custom['color'] = self::CUSTOM_DEFAULTS['color'];
+            }
+
+            if (! is_string($custom['photo']) || ! preg_match('/^' . self::PHOTO_PATTERN . '$/', $custom['photo'])) {
+                $custom['photo'] = null;
+            }
+
+            $custom['greeting'] = is_string($custom['greeting']) && trim($custom['greeting']) !== ''
+                ? trim($custom['greeting'])
+                : self::CUSTOM_DEFAULTS['greeting'];
+
+            self::$custom = $custom;
+        }
+
+        return self::$custom;
+    }
+
+    public static function saveCustom(array $settings, ?\App\Models\User $by = null): void
+    {
+        Setting::put(self::CUSTOM_SETTING, json_encode(array_intersect_key($settings, self::CUSTOM_DEFAULTS)), $by);
+        self::$custom = null;
+    }
+
+    /** For long-running processes and tests: read the settings again next time. */
     public static function forget(): void
     {
         self::$currentKey = null;
+        self::$custom = null;
     }
 
     public static function current(): array
     {
-        return self::shape(self::currentKey(), self::THEMES[self::currentKey()]);
+        $key = self::currentKey();
+
+        return self::shape($key, self::definitions()[$key]);
+    }
+
+    private static function definitions(): array
+    {
+        return self::THEMES + [self::CUSTOM => self::customDefinition()];
+    }
+
+    private static function customDefinition(): array
+    {
+        $custom = self::customSettings();
+        $color = strtolower($custom['color']);
+        $photoUrl = $custom['photo'] ? route('theme.photo', $custom['photo'], false) : null;
+
+        return [
+            'name' => 'Custom',
+            'emoji' => '',
+            'greeting' => $custom['greeting'],
+            'description' => 'Your own photo, greeting and colour, set below.',
+            // A dark wash over the photo keeps the white header text readable on any picture.
+            'hero' => $photoUrl
+                ? "linear-gradient(180deg, rgba(10, 18, 35, .45) 0%, rgba(10, 18, 35, .72) 100%), url(\"{$photoUrl}\")"
+                : "linear-gradient(135deg, #0f1f3d 0%, {$color} 100%)",
+            'accent' => [$color, self::mixWithWhite($color, .45)],
+            'soft' => [$color . '1f', $color . '33'],
+            'pattern' => null,
+            'photo' => $custom['photo'],
+            'photoUrl' => $photoUrl,
+            'color' => $color,
+        ];
+    }
+
+    /** Lighter version of a colour, so a dark accent still reads on dark pages. */
+    private static function mixWithWhite(string $hex, float $amount): string
+    {
+        $channels = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
+
+        return '#' . implode('', array_map(
+            fn ($c) => str_pad(dechex((int) round($c + (255 - $c) * $amount)), 2, '0', STR_PAD_LEFT),
+            $channels
+        ));
     }
 
     private static function shape(string $key, array $theme): array

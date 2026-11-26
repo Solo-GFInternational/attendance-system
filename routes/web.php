@@ -173,6 +173,21 @@ Route::get('/attendance/{code}', function (Request $request, string $code) {
 
 /*
 |--------------------------------------------------------------------------
+| CUSTOM THEME PHOTO
+|--------------------------------------------------------------------------
+|
+| Public because the site tablets are not logged in. Only photo names in the
+| Custom theme's own format are accepted (see CustomThemePhoto).
+|
+*/
+
+Route::get('/theme-photo/{file}', [ThemeController::class, 'photo'])
+    ->where('file', App\Support\FestiveTheme::PHOTO_PATTERN)
+    ->name('theme.photo');
+
+
+/*
+|--------------------------------------------------------------------------
 | PUBLIC VISITOR REGISTER
 |--------------------------------------------------------------------------
 */
