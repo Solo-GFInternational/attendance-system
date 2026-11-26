@@ -19,6 +19,7 @@
         'users'     => '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
         'add-user'  => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/>',
         'profile'   => '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+        'theme'     => '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.56C22 6.04 17.46 2 12 2z"/>',
         'logout'    => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     ];
 
@@ -80,6 +81,14 @@
                 </a>
             @endif
 
+            @if ($gfUser->is_admin)
+                <a href="{{ route('theme.edit') }}"
+                   class="gf-nav-link gf-theme-toggle {{ request()->routeIs('theme.*') ? 'active' : '' }}"
+                   title="Festive theme for every page and tablet" aria-label="Festive theme">
+                    {!! $gfIcon('theme') !!}
+                </a>
+            @endif
+
             @include('partials.theme-toggle', ['class' => 'gf-nav-link gf-theme-toggle', 'iconClass' => 'gf-icon'])
 
             <span class="gf-nav-divider" aria-hidden="true"></span>
@@ -106,3 +115,14 @@
     @endif
 
 </nav>
+
+@php $gfFestive = \App\Support\FestiveTheme::current(); @endphp
+@if ($gfFestive['isFestive'])
+    <div class="gf-festive-banner" role="note">
+        <span aria-hidden="true">{{ $gfFestive['emoji'] }}</span>
+        <span>{{ $gfFestive['greeting'] }}</span>
+        @if ($gfUser?->is_admin)
+            <a href="{{ route('theme.edit') }}">Change theme</a>
+        @endif
+    </div>
+@endif
