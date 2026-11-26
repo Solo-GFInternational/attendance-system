@@ -15,6 +15,7 @@
 
 <title>Employee Management</title>
 
+@include('partials.theme-init')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <!-- Local Face API -->
@@ -26,31 +27,14 @@
 /* GLOBAL */
 /* ========================================================= */
 
-:root {
-    --gf-primary: #0d6efd;
-    --gf-primary-dark: #0b5ed7;
-    --gf-success: #198754;
-    --gf-danger: #dc3545;
-    --gf-warning: #f59f00;
-    --gf-dark: #17202a;
-    --gf-muted: #6c757d;
-    --gf-border: #e9ecef;
-    --gf-bg: #f4f7fb;
-}
+/* Colours come from resources/css/admin.css so they follow light / dark mode. */
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    background:
-        linear-gradient(
-            180deg,
-            #eef3f9 0%,
-            #f7f9fc 260px,
-            #f4f7fb 100%
-        );
-    color: var(--gf-dark);
+    color: var(--gf-text);
     font-family:
         Inter,
         system-ui,
@@ -138,7 +122,7 @@ body {
 .page-header h2 {
     font-size: 27px;
     letter-spacing: -.5px;
-    color: #182230;
+    color: var(--gf-text);
 }
 
 .page-header p {
@@ -248,7 +232,7 @@ body {
 .search-control {
     min-height: 46px;
     border-radius: 11px;
-    border: 1px solid #dfe4ea;
+    border: 1px solid var(--gf-border-strong);
     padding-left: 15px;
     font-size: 14px;
     transition:
@@ -282,7 +266,7 @@ body {
 }
 
 .table-card > .card-body {
-    background: #fff;
+    background: var(--gf-surface);
 }
 
 .table-card h5 {
@@ -298,9 +282,9 @@ body {
 }
 
 .employee-table thead th {
-    background: #f8fafc !important;
-    border-bottom: 1px solid #e7ebef;
-    color: #667085;
+    background: var(--gf-subtle) !important;
+    border-bottom: 1px solid var(--gf-border);
+    color: var(--gf-muted);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: .07em;
@@ -315,12 +299,12 @@ body {
 }
 
 .employee-table tbody tr:hover {
-    background: #f8fbff;
+    background: var(--gf-subtle);
 }
 
 .employee-table td {
-    border-color: #edf0f3;
-    color: #343a40;
+    border-color: var(--gf-border);
+    color: var(--gf-text);
     font-size: 14px;
     padding-top: 15px !important;
     padding-bottom: 15px !important;
@@ -339,8 +323,8 @@ body {
     align-items: center;
     padding: 6px 10px;
     border-radius: 8px;
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--gf-hover);
+    color: var(--gf-text-2);
     font-size: 12px;
     font-weight: 800;
     letter-spacing: .03em;
@@ -355,25 +339,20 @@ body {
     height: 44px;
     min-width: 44px;
     border-radius: 13px;
-    background:
-        linear-gradient(
-            135deg,
-            #e7f0ff,
-            #dbeafe
-        );
-    color: #0d6efd;
+    background: var(--gf-primary-soft);
+    color: var(--gf-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 15px;
     font-weight: 800;
-    border: 1px solid #d8e6ff;
+    border: 1px solid var(--gf-primary-border);
 }
 
 /* Employee name */
 
 .employee-name {
-    color: #1f2937;
+    color: var(--gf-text);
     font-size: 14px;
     font-weight: 700;
 }
@@ -462,9 +441,9 @@ body {
 /* ========================================================= */
 
 .employee-count {
-    background: #f8fafc;
-    color: #475467;
-    border: 1px solid #e4e7ec !important;
+    background: var(--gf-subtle);
+    color: var(--gf-text-2);
+    border: 1px solid var(--gf-border) !important;
     border-radius: 9px !important;
     font-size: 12px;
     font-weight: 700;
@@ -486,12 +465,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f5f9;
+    background: var(--gf-hover);
     font-size: 30px;
 }
 
 .empty-state h5 {
-    color: #344054;
+    color: var(--gf-text);
 }
 
 /* ========================================================= */
@@ -605,8 +584,8 @@ body {
 
 #faceRegistrationModal .modal-header {
     padding: 20px 24px;
-    border-bottom: 1px solid #e9ecef;
-    background: #fff;
+    border-bottom: 1px solid var(--gf-border);
+    background: var(--gf-surface);
 }
 
 #faceRegistrationModal .modal-title {
@@ -622,7 +601,7 @@ body {
 
 #faceRegistrationModal .modal-body {
     padding: 24px;
-    background: #f8f9fa;
+    background: var(--gf-subtle);
 }
 
 #faceRegistrationModal .face-status {
@@ -663,13 +642,13 @@ body {
 
 #faceRegistrationModal .face-help div:first-child {
     font-weight: 600;
-    color: #495057;
+    color: var(--gf-text-2);
 }
 
 #faceRegistrationModal .modal-footer {
     padding: 16px 24px;
-    background: #fff;
-    border-top: 1px solid #e9ecef;
+    background: var(--gf-surface);
+    border-top: 1px solid var(--gf-border);
 }
 
 #faceRegistrationModal .modal-footer .btn {

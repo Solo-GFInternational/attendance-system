@@ -3,7 +3,10 @@
     Emergency Roll Call). Include inside <head>: @include('partials.kiosk-theme')
     Plain CSS on purpose: no build step, and it works offline on the
     emergency page because it is part of the cached HTML.
+    Light / dark mode: colours are tokens below, with dark values under
+    [data-theme="dark"] (set by partials/theme-init).
 --}}
+@include('partials.theme-init')
 <style>
 
     :root {
@@ -11,29 +14,90 @@
         --navy-2: #16294f;
         --bg: #f3f5f9;
         --surface: #ffffff;
+        --subtle: #f8fafc;
+        --hover: #f3f5f9;
         --border: #e2e7ef;
         --border-strong: #cfd6e1;
         --text: #111827;
+        --text-2: #374151;
         --muted: #64748b;
+        --faint: #94a3b8;
 
         --blue: #1f5fd6;
         --blue-dark: #194fb3;
         --blue-soft: #eaf1fd;
+        --blue-border: #c9d9f7;
+        --blue-text: #1a4597;
         --green: #13803f;
         --green-dark: #0f6a34;
         --green-soft: #e7f6ed;
+        --green-border: #b7e2c6;
+        --green-text: #0f5a2c;
         --amber: #b45309;
         --amber-soft: #fef6e7;
+        --amber-border: #f6dca6;
+        --amber-text: #7c4a03;
+        --orange: #b4530a;
+        --orange-soft: #fdf0e6;
         --red: #c62f3b;
         --red-dark: #a3222d;
         --red-soft: #fdecee;
+        --red-border: #f3c6cb;
+        --red-text: #8f1d27;
         --violet: #6d3fc0;
         --violet-soft: #f1ecfb;
+        --violet-border: #d9ccfb;
+        --violet-text: #4c1d95;
 
         --radius: 16px;
         --radius-sm: 10px;
         --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 8px 24px rgba(16, 24, 40, .06);
         --shadow-hover: 0 2px 4px rgba(16, 24, 40, .06), 0 16px 36px rgba(16, 24, 40, .10);
+    }
+
+    /* Dark mode. Buttons keep their solid colours; soft tints become
+       translucent so they sit on the dark cards. */
+    [data-theme="dark"] {
+        --navy: #0b1426;
+        --navy-2: #111d36;
+        --bg: #0d1117;
+        --surface: #161b24;
+        --subtle: #1b212c;
+        --hover: #222a36;
+        --border: #2a3240;
+        --border-strong: #3a4454;
+        --text: #e6e9ef;
+        --text-2: #c7ced9;
+        --muted: #98a3b4;
+        --faint: #6b7686;
+
+        --blue: #2f6fe4;
+        --blue-dark: #2860c9;
+        --blue-soft: rgba(80, 140, 255, .14);
+        --blue-border: rgba(80, 140, 255, .38);
+        --blue-text: #9cc0ff;
+        --green: #18914a;
+        --green-dark: #137a3e;
+        --green-soft: rgba(52, 199, 110, .14);
+        --green-border: rgba(52, 199, 110, .38);
+        --green-text: #7ddca2;
+        --amber-soft: rgba(245, 170, 40, .14);
+        --amber-border: rgba(245, 170, 40, .38);
+        --amber-text: #f5c66b;
+        --orange: #f59a4a;
+        --orange-soft: rgba(245, 140, 50, .15);
+        --red: #d63a47;
+        --red-dark: #b8303c;
+        --red-soft: rgba(240, 90, 100, .14);
+        --red-border: rgba(240, 90, 100, .40);
+        --red-text: #ff9ea6;
+        --violet: #a98af0;
+        --violet-soft: rgba(150, 110, 240, .16);
+        --violet-border: rgba(150, 110, 240, .40);
+        --violet-text: #cbb8fb;
+
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .25);
+        --shadow-hover: 0 2px 4px rgba(0, 0, 0, .4), 0 16px 36px rgba(0, 0, 0, .35);
     }
 
     * {
@@ -130,6 +194,42 @@
 
     .k-now {
         text-align: right;
+    }
+
+    .k-topbar-end {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    /* Light / dark mode button (partials/theme-toggle), on the dark header band */
+    .k-theme-toggle {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .1);
+        border: 1px solid rgba(255, 255, 255, .22);
+        color: #ffffff;
+        cursor: pointer;
+        transition: background .2s ease;
+        flex-shrink: 0;
+    }
+
+    .k-theme-toggle:hover {
+        background: rgba(255, 255, 255, .18);
+    }
+
+    .k-theme-toggle:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, .6);
+        outline-offset: 2px;
+    }
+
+    .k-theme-toggle svg {
+        width: 20px;
+        height: 20px;
     }
 
     .k-now-time {
@@ -352,7 +452,7 @@
         margin-bottom: 7px;
         font-size: 14px;
         font-weight: 600;
-        color: #374151;
+        color: var(--text-2);
     }
 
     .k-field .req {
@@ -365,7 +465,7 @@
         padding: 13px 15px;
         border: 1px solid var(--border-strong);
         border-radius: var(--radius-sm);
-        background: #ffffff;
+        background: var(--surface);
         color: var(--text);
         font-family: inherit;
         font-size: 16px;
@@ -379,7 +479,7 @@
     }
 
     .k-input::placeholder {
-        color: #9aa5b5;
+        color: var(--faint);
     }
 
     .k-input:focus {
@@ -436,8 +536,8 @@
     .k-btn.green:hover:not(:disabled)  { background: var(--green-dark); }
     .k-btn.red     { background: var(--red); }
     .k-btn.red:hover:not(:disabled)    { background: var(--red-dark); }
-    .k-btn.ghost   { background: #ffffff; color: #374151; border-color: var(--border-strong); }
-    .k-btn.ghost:hover:not(:disabled)  { background: #f3f5f9; }
+    .k-btn.ghost   { background: var(--surface); color: var(--text-2); border-color: var(--border-strong); }
+    .k-btn.ghost:hover:not(:disabled)  { background: var(--hover); }
     .k-btn.sm      { min-height: 42px; font-size: 14px; padding: 0 16px; border-radius: 10px; }
 
 
@@ -465,10 +565,10 @@
         margin-top: 1px;
     }
 
-    .k-alert.success { background: var(--green-soft); border-color: #b7e2c6; color: #0f5a2c; }
-    .k-alert.error   { background: var(--red-soft);   border-color: #f3c6cb; color: #8f1d27; }
-    .k-alert.info    { background: var(--blue-soft);  border-color: #c9d9f7; color: #1a4597; }
-    .k-alert.warning { background: var(--amber-soft); border-color: #f6dca6; color: #7c4a03; }
+    .k-alert.success { background: var(--green-soft); border-color: var(--green-border); color: var(--green-text); }
+    .k-alert.error   { background: var(--red-soft);   border-color: var(--red-border);   color: var(--red-text); }
+    .k-alert.info    { background: var(--blue-soft);  border-color: var(--blue-border);  color: var(--blue-text); }
+    .k-alert.warning { background: var(--amber-soft); border-color: var(--amber-border); color: var(--amber-text); }
 
 
     /* =====================================================

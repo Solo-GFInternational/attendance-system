@@ -52,14 +52,14 @@
 
         .alert-success {
             background: var(--green-soft);
-            border-color: #b7e2c6;
-            color: #0f5a2c;
+            border-color: var(--green-border);
+            color: var(--green-text);
         }
 
         .alert-error {
             background: var(--red-soft);
-            border-color: #f3c6cb;
-            color: #8f1d27;
+            border-color: var(--red-border);
+            color: var(--red-text);
         }
 
 
@@ -72,9 +72,9 @@
             margin-bottom: 20px;
             padding: 14px 18px;
             background: var(--blue-soft);
-            border: 1px solid #c9d9f7;
+            border: 1px solid var(--blue-border);
             border-radius: 12px;
-            color: #1a4597;
+            color: var(--blue-text);
             font-weight: 600;
             text-align: center;
         }
@@ -120,8 +120,8 @@
         .face-recognition-box {
             margin-bottom: 24px;
             padding: 24px;
-            background: linear-gradient(180deg, #f5f9ff 0%, #eef4fe 100%);
-            border: 1px solid #c9d9f7;
+            background: var(--blue-soft);
+            border: 1px solid var(--blue-border);
             border-radius: 14px;
             text-align: center;
         }
@@ -132,7 +132,7 @@
             gap: 8px;
             font-size: 18px;
             font-weight: 700;
-            color: #173d86;
+            color: var(--blue-text);
         }
 
         .face-recognition-title svg {
@@ -142,7 +142,7 @@
 
         .face-recognition-status {
             margin: 8px 0 16px;
-            color: #475569;
+            color: var(--text-2);
             font-size: 15px;
         }
 
@@ -201,7 +201,7 @@
             align-items: center;
             gap: 14px;
             margin: 0 0 20px;
-            color: #94a3b8;
+            color: var(--faint);
             font-size: 13px;
             font-weight: 600;
             letter-spacing: .06em;
@@ -230,7 +230,7 @@
             margin-bottom: 7px;
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-2);
         }
 
         .employee-search,
@@ -240,7 +240,7 @@
             padding: 14px 16px;
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
-            background: #ffffff;
+            background: var(--surface);
             color: var(--text);
             font-family: inherit;
             font-size: 16px;
@@ -258,7 +258,7 @@
         }
 
         .employee-search::placeholder {
-            color: #9aa5b5;
+            color: var(--faint);
         }
 
         .employee-search:focus,
@@ -275,7 +275,7 @@
             display: none;
             margin-top: 10px;
             padding: 14px;
-            background: #f8fafc;
+            background: var(--subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             color: var(--muted);
@@ -290,7 +290,7 @@
         .face-setup {
             border: 1px solid var(--border);
             border-radius: 14px;
-            background: #ffffff;
+            background: var(--surface);
         }
 
         .face-setup summary {
@@ -364,7 +364,7 @@
             padding: 10px 14px;
             border: 1px solid var(--border);
             border-radius: 12px;
-            background: #ffffff;
+            background: var(--surface);
             color: var(--text);
             font-family: inherit;
             text-align: left;
@@ -373,8 +373,8 @@
         }
 
         .setup-item:hover {
-            border-color: #c4b5fd;
-            background: #faf8ff;
+            border-color: var(--violet-border);
+            background: var(--violet-soft);
         }
 
         .setup-item.selected {
@@ -426,7 +426,7 @@
             display: none;
             margin-top: 20px;
             padding: 18px 20px;
-            background: #f8fafc;
+            background: var(--subtle);
             border: 1px solid var(--border);
             border-left: 4px solid var(--blue);
             border-radius: 12px;
@@ -446,7 +446,7 @@
         .status-message {
             margin-top: 10px;
             font-size: 15px;
-            color: #475569;
+            color: var(--text-2);
         }
 
 
@@ -593,13 +593,13 @@
             margin-top: 14px;
             padding: 16px;
             background: var(--violet-soft);
-            border: 1px solid #d9ccfb;
+            border: 1px solid var(--violet-border);
             border-radius: 12px;
         }
 
         .setup-register-message {
             margin-bottom: 12px;
-            color: #4c1d95;
+            color: var(--violet-text);
             font-size: 15px;
             font-weight: 600;
             text-align: center;
@@ -655,7 +655,7 @@
         .sign-out:hover:not(:disabled)  { background: var(--red-dark); }
 
         #registerMyFaceButton {
-            background: var(--violet) !important;
+            background: #6d3fc0 !important; /* solid in both themes: white text sits on it */
         }
 
 
@@ -668,7 +668,7 @@
             margin-top: 16px;
             padding: 18px;
             background: var(--amber-soft);
-            border: 1px solid #f6dca6;
+            border: 1px solid var(--amber-border);
             border-radius: 12px;
         }
 
@@ -677,7 +677,7 @@
             margin-bottom: 7px;
             font-size: 14px;
             font-weight: 700;
-            color: #7c4a03;
+            color: var(--amber-text);
         }
 
         .reason-required {
@@ -691,7 +691,7 @@
             padding: 13px 15px;
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
-            background: #ffffff;
+            background: var(--surface);
             font-family: inherit;
             font-size: 16px;
             outline: none;
@@ -709,7 +709,7 @@
 
         .reason-help {
             margin-top: 6px;
-            color: #7c4a03;
+            color: var(--amber-text);
             font-size: 12.5px;
         }
 
@@ -743,7 +743,7 @@
             justify-content: space-between;
             gap: 20px;
             padding: 12px 0;
-            border-bottom: 1px solid #eef1f5;
+            border-bottom: 1px solid var(--border);
         }
 
         .outing-row:last-child {
@@ -790,7 +790,7 @@
         }
 
         .quick-link:hover {
-            border-color: #d3dae6;
+            border-color: var(--border-strong);
             box-shadow: var(--shadow-hover);
         }
 
@@ -809,7 +809,7 @@
             margin-left: auto;
             width: 18px;
             height: 18px;
-            color: #94a3b8;
+            color: var(--faint);
         }
 
 
@@ -904,7 +904,7 @@
         .camera-instruction {
             margin: 12px 0 16px;
             text-align: center;
-            color: #475569;
+            color: var(--text-2);
             font-size: 14px;
         }
 
@@ -913,7 +913,7 @@
             padding: 12px;
             border-radius: 10px;
             background: var(--red-soft);
-            color: #8f1d27;
+            color: var(--red-text);
             text-align: center;
             font-size: 15px;
             font-weight: 700;
@@ -946,17 +946,17 @@
         .take-photo    { background: var(--green); color: #ffffff; }
         .confirm-photo { background: var(--blue);  color: #ffffff; }
         .retake-photo  { background: #64748b;      color: #ffffff; }
-        .cancel-photo  { background: #ffffff; color: #374151; border-color: var(--border-strong); }
-        .cancel-photo:hover { background: #f3f5f9; }
+        .cancel-photo  { background: var(--surface); color: var(--text-2); border-color: var(--border-strong); }
+        .cancel-photo:hover { background: var(--hover); }
 
         .camera-error {
             display: none;
             margin-bottom: 16px;
             padding: 13px 14px;
             background: var(--red-soft);
-            border: 1px solid #f3c6cb;
+            border: 1px solid var(--red-border);
             border-radius: 10px;
-            color: #8f1d27;
+            color: var(--red-text);
             font-size: 14px;
         }
 
@@ -1674,9 +1674,9 @@
 
             <div
                 style="
-                    background:#eff6ff;
-                    border:1px solid #bfdbfe;
-                    color:#1e3a8a;
+                    background:var(--blue-soft);
+                    border:1px solid var(--blue-border);
+                    color:var(--blue-text);
                     padding:12px;
                     border-radius:8px;
                     margin-bottom:15px;
@@ -2403,11 +2403,11 @@ document.addEventListener(
 
 
                 faceStatus.style.background =
-                    '#fef2f2';
+                    'var(--red-soft)';
 
 
                 faceStatus.style.color =
-                    '#991b1b';
+                    'var(--red-text)';
 
 
                 return false;
@@ -2423,11 +2423,11 @@ document.addEventListener(
 
 
                 faceStatus.style.background =
-                    '#fffbeb';
+                    'var(--amber-soft)';
 
 
                 faceStatus.style.color =
-                    '#92400e';
+                    'var(--amber-text)';
 
 
                 const vision =
@@ -2480,11 +2480,11 @@ delegate:
 
 
                 faceStatus.style.background =
-                    '#fffbeb';
+                    'var(--amber-soft)';
 
 
                 faceStatus.style.color =
-                    '#92400e';
+                    'var(--amber-text)';
 
 
                 return true;
@@ -2516,11 +2516,11 @@ delegate:
 
 
                 faceStatus.style.background =
-                    '#fef2f2';
+                    'var(--red-soft)';
 
 
                 faceStatus.style.color =
-                    '#991b1b';
+                    'var(--red-text)';
 
 
                 cameraInstruction.textContent =
@@ -2912,11 +2912,11 @@ delegate:
             {
 
                 faceStatus.style.background =
-                    '#ecfdf5';
+                    'var(--green-soft)';
 
 
                 faceStatus.style.color =
-                    '#047857';
+                    'var(--green-text)';
 
 
                 if (!capturingPhoto)
@@ -2936,11 +2936,11 @@ delegate:
             {
 
                 faceStatus.style.background =
-                    '#fef2f2';
+                    'var(--red-soft)';
 
 
                 faceStatus.style.color =
-                    '#991b1b';
+                    'var(--red-text)';
 
 
                 if (!capturingPhoto)

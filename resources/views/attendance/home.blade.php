@@ -78,7 +78,7 @@
 
         .option:hover {
             box-shadow: var(--shadow-hover);
-            border-color: #d3dae6;
+            border-color: var(--border-strong);
             transform: translateY(-2px);
         }
 
@@ -134,8 +134,8 @@
         .option-tags li {
             font-size: 13px;
             font-weight: 600;
-            color: #374151;
-            background: #f3f5f9;
+            color: var(--text-2);
+            background: var(--hover);
             border: 1px solid var(--border);
             border-radius: 999px;
             padding: 5px 12px;
@@ -184,7 +184,7 @@
             margin-top: 24px;
             padding: 22px 26px;
             background: var(--surface);
-            border: 1px solid #f3c6cb;
+            border: 1px solid var(--red-border);
             border-left: 5px solid var(--red);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
@@ -194,7 +194,7 @@
         }
 
         .emergency:hover {
-            background: #fffafa;
+            background: var(--red-soft);
             box-shadow: var(--shadow-hover);
         }
 

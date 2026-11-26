@@ -80,6 +80,8 @@
                 </a>
             @endif
 
+            @include('partials.theme-toggle', ['class' => 'gf-nav-link gf-theme-toggle', 'iconClass' => 'gf-icon'])
+
             <span class="gf-nav-divider" aria-hidden="true"></span>
 
             <a href="{{ route('profile.edit') }}"

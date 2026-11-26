@@ -9,6 +9,7 @@
 
     <title>Edit Employee - Attendance System</title>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>

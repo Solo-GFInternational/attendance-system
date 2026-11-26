@@ -7,18 +7,15 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        @include('partials.theme-init')
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <style>
-            body { background: #f5f7fa; }
-        </style>
     </head>
     <body class="admin-ui">
         <div class="container-fluid px-4 pt-4">
             @include('partials.admin-nav')
 
             @isset($header)
-                <header class="bg-white rounded-4 shadow-sm p-4 mb-4">
+                <header class="page-header mb-4">
                     {{ $header }}
                 </header>
             @endisset

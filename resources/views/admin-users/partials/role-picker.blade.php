@@ -15,17 +15,17 @@
     .role-option {
         position: relative;
         display: block;
-        border: 2px solid #dee2e6;
+        border: 2px solid var(--gf-border-strong);
         border-radius: 12px;
         padding: 16px 16px 16px 48px;
         cursor: pointer;
-        background: #ffffff;
+        background: var(--gf-surface);
         transition: border-color .15s ease, background .15s ease;
         margin: 0;
     }
 
     .role-option:hover {
-        border-color: #9ec5fe;
+        border-color: var(--gf-primary-border);
     }
 
     .role-option input {
@@ -36,20 +36,20 @@
     }
 
     .role-option:has(input:checked) {
-        border-color: #0d6efd;
-        background: #f3f8ff;
+        border-color: var(--gf-primary);
+        background: var(--gf-primary-soft);
     }
 
     .role-option-title {
         font-weight: 700;
-        color: #212529;
+        color: var(--gf-text);
         margin-bottom: 6px;
     }
 
     .role-option ul {
         margin: 0;
         padding-left: 18px;
-        color: #6c757d;
+        color: var(--gf-muted);
         font-size: 13px;
     }
 </style>
