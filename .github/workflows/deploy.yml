@@ -174,8 +174,9 @@ jobs:
       - name: Recycle IIS app pool
         run: |
           $ErrorActionPreference = 'Stop'
-          Import-Module WebAdministration
-          Restart-WebAppPool -Name $env:APP_POOL
+          schtasks /run /tn "RecycleAttendancePool"
+          if ($LASTEXITCODE -ne 0) { throw "Could not start RecycleAttendancePool (exit code $LASTEXITCODE)" }
+          Start-Sleep -Seconds 5
 
       # Always bring the site back up, even if a step above failed.
       - name: Maintenance mode off
