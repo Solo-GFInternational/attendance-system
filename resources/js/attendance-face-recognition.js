@@ -1,6 +1,17 @@
-import * as faceapi from '@vladmandic/face-api';
+// Uses the one face-api copy the page already loads (public/js/face-api),
+// so the tablet downloads it once and registration shares the same models.
+const faceapi = window.faceapi;
 
 const MODEL_URL = '/models';
+
+// Smaller detector input = much faster on tablets. The face must fill at
+// least 18% of the frame width anyway, so 320 finds it easily. The face
+// descriptor itself is still taken from the full-size camera image.
+const DETECTOR_OPTIONS = faceapi
+    ? new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.6 })
+    : null;
+
+let modelsPromise = null;
 
 let stream = null;
 let recognitionRunning = false;
@@ -23,6 +34,9 @@ const video =
 const statusElement =
     document.getElementById('recognitionStatus');
 
+const frame =
+    document.getElementById('recognitionFrame');
+
 
 // ============================================================
 // CHECK REQUIRED ELEMENTS
@@ -41,59 +55,86 @@ if (!startButton || !video) {
     // LOAD FACE RECOGNITION MODELS
     // ========================================================
 
-    async function loadModels() {
+    // Loads the three models at the same time and warms them up once,
+    // so the first scan after a tap does not pay the start-up cost.
+    // Safe to call many times: everyone shares one promise.
+    function loadModels() {
 
-        if (modelsLoaded) {
-            return true;
+        if (modelsPromise) {
+            return modelsPromise;
         }
 
-        if (statusElement) {
-            statusElement.textContent =
-                'Loading face recognition models...';
+        if (!faceapi) {
+            return Promise.reject(
+                new Error('Face recognition library is not available.')
+            );
         }
 
-        try {
+        const started = performance.now();
 
-            await faceapi.nets.tinyFaceDetector.loadFromUri(
-                MODEL_URL
-            );
+        modelsPromise = (async () => {
 
-            await faceapi.nets.faceLandmark68Net.loadFromUri(
-                MODEL_URL
-            );
+            // Lets the graphics engine reuse compiled code across image
+            // sizes: warm-up measured about twice as fast with this on.
+            try {
+                faceapi.tf.env().set('WEBGL_USE_SHAPES_UNIFORMS', true);
+            } catch (error) {
+                // Older engines without the flag still work.
+            }
 
-            await faceapi.nets.faceRecognitionNet.loadFromUri(
-                MODEL_URL
-            );
+            await faceapi.tf.ready();
+
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.isLoaded || faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.isLoaded || faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.isLoaded || faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+            ]);
+
+            await warmUp();
 
             modelsLoaded = true;
 
-            if (statusElement) {
-                statusElement.textContent =
-                    'Face recognition models loaded.';
-            }
-
             console.log(
-                'Face recognition models loaded successfully.'
+                'Face recognition ready in ' +
+                Math.round(performance.now() - started) + ' ms (' +
+                faceapi.tf.getBackend() + ').'
             );
 
             return true;
 
-        } catch (error) {
+        })().catch(error => {
 
-            console.error(
-                'Failed to load face recognition models:',
-                error
-            );
+            console.error('Failed to load face recognition models:', error);
+
+            modelsPromise = null;
 
             modelsLoaded = false;
 
-            if (statusElement) {
-                statusElement.textContent =
-                    'Unable to load face recognition models.';
-            }
-
             throw error;
+        });
+
+        return modelsPromise;
+    }
+
+
+    // The first run of each model compiles its graphics code, which can take
+    // a few seconds on a tablet. Do it now on a blank image, not on a person.
+    async function warmUp() {
+
+        try {
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 320;
+            canvas.height = 320;
+            canvas.getContext('2d').fillRect(0, 0, 320, 320);
+
+            await faceapi.detectSingleFace(canvas, DETECTOR_OPTIONS);
+            await faceapi.detectFaceLandmarks(canvas);
+            await faceapi.computeFaceDescriptor(canvas);
+
+        } catch (error) {
+
+            console.warn('Face model warm-up skipped:', error);
         }
     }
 
@@ -112,7 +153,18 @@ if (!startButton || !video) {
 
             clearRecognitionTimer();
 
-            await loadModels();
+            startButton.disabled = true;
+
+            // Models are normally already loaded (started when the page
+            // opened). Start the camera at the same time, not after.
+            const modelsReady = loadModels();
+
+            modelsReady.catch(() => {}); // reported below when awaited
+
+            if (!modelsLoaded && statusElement) {
+                statusElement.textContent =
+                    'Starting face recognition...';
+            }
 
 
             // ------------------------------------------------
@@ -145,16 +197,25 @@ if (!startButton || !video) {
 
             video.srcObject = stream;
 
+            // Size and position come from the page CSS (.face-recognition-frame).
             video.style.display = 'block';
 
-            video.style.width = '100%';
+            if (frame) {
+                frame.classList.add('is-active');
 
-            video.style.maxWidth = '500px';
+                // Landscape tablets: bring the whole camera and the button
+                // into view instead of leaving them below the screen edge.
+                const box = frame.closest('.face-recognition-box') || frame;
 
-            video.style.margin = '0 auto 15px';
+                requestAnimationFrame(() => {
+                    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            }
 
 
             await video.play();
+
+            await modelsReady;
 
 
             // ------------------------------------------------
@@ -165,13 +226,11 @@ if (!startButton || !video) {
 
             recognitionInProgress = false;
 
-            startButton.disabled = true;
-
 
             if (statusElement) {
 
                 statusElement.textContent =
-                    'Looking for your face...';
+                    'Look at the camera and fit your face in the oval.';
             }
 
 
@@ -199,7 +258,9 @@ if (!startButton || !video) {
             if (statusElement) {
 
                 statusElement.textContent =
-                    'Unable to start the camera.';
+                    modelsLoaded
+                        ? 'Unable to start the camera.'
+                        : 'Unable to start face recognition. Please reload the page.';
             }
         }
     }
@@ -218,7 +279,7 @@ if (!startButton || !video) {
 
         if (recognitionInProgress) {
 
-            scheduleNextRecognition(500);
+            scheduleNextRecognition(100);
 
             return;
         }
@@ -231,7 +292,7 @@ if (!startButton || !video) {
                 HTMLMediaElement.HAVE_CURRENT_DATA
             ) {
 
-                scheduleNextRecognition(500);
+                scheduleNextRecognition(100);
 
                 return;
             }
@@ -242,7 +303,7 @@ if (!startButton || !video) {
                 video.videoHeight <= 0
             ) {
 
-                scheduleNextRecognition(500);
+                scheduleNextRecognition(100);
 
                 return;
             }
@@ -259,13 +320,7 @@ if (!startButton || !video) {
                 await faceapi
                     .detectSingleFace(
                         video,
-
-                        new faceapi.TinyFaceDetectorOptions({
-
-                            inputSize: 416,
-
-                            scoreThreshold: 0.70
-                        })
+                        DETECTOR_OPTIONS
                     )
                     .withFaceLandmarks()
                     .withFaceDescriptor();
@@ -333,7 +388,9 @@ if (!startButton || !video) {
 
                         recognitionInProgress = false;
 
-                        scheduleNextRecognition(150);
+                        // Next sample almost straight away: just long enough
+                        // for the camera to give a new frame.
+                        scheduleNextRecognition(40);
 
                         return;
                     }
@@ -366,7 +423,7 @@ if (!startButton || !video) {
                     }
 
 
-                    scheduleNextRecognition(1000);
+                    scheduleNextRecognition(400);
 
                     return;
                 }
@@ -386,7 +443,7 @@ if (!startButton || !video) {
 
             recognitionInProgress = false;
 
-            scheduleNextRecognition(500);
+            scheduleNextRecognition(120);
 
 
         } catch (error) {
@@ -398,7 +455,7 @@ if (!startButton || !video) {
 
             recognitionInProgress = false;
 
-            scheduleNextRecognition(500);
+            scheduleNextRecognition(300);
         }
     }
 
@@ -800,6 +857,12 @@ if (!startButton || !video) {
         }
 
 
+        if (frame) {
+
+            frame.classList.remove('is-active');
+        }
+
+
         if (startButton) {
 
             startButton.disabled = false;
@@ -812,6 +875,9 @@ if (!startButton || !video) {
     // ========================================================
 
     window.attendanceFaceRecognition = {
+
+        loadModels: loadModels,
+
 
         getVideo: function () {
 
@@ -865,5 +931,22 @@ if (!startButton || !video) {
         'beforeunload',
         stopCamera
     );
+
+
+    // ========================================================
+    // GET READY AS SOON AS THE PAGE OPENS
+    // The page reloads after every sign-in, so without this each
+    // person would wait for the models to load after tapping Start.
+    // ========================================================
+
+    const preload = () => loadModels().catch(() => {
+        // Tapping Start tries again and shows the message.
+    });
+
+    if (document.readyState === 'complete') {
+        setTimeout(preload, 0);
+    } else {
+        window.addEventListener('load', () => setTimeout(preload, 0), { once: true });
+    }
 }
 
