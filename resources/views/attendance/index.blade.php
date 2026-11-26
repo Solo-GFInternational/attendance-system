@@ -17,7 +17,9 @@
 
     <title>Employee Attendance | Goodman Fielder</title>
 
-    <script src="{{ asset('js/face-api/face-api.js') }}"></script>
+    {{-- One shared copy of face-api for recognition and registration.
+         Deferred so the page shows straight away; models are preloaded after. --}}
+    <script defer src="{{ asset('js/face-api/face-api.js') }}"></script>
 
     @include('partials.kiosk-theme')
 
@@ -146,21 +148,48 @@
             font-size: 15px;
         }
 
-        /* Fixed landscape frame: a portrait tablet camera otherwise
-           produces a tall video that pushes the buttons off screen.
-           object-fit: cover crops the stream to fit the frame. */
-        .face-recognition-video {
+        /* Camera frame sized for tablets: as wide as fits, but never taller
+           than about half the screen so the button stays visible.
+           Fixed 4:3 frame; object-fit: cover crops the stream to fit. */
+        .face-recognition-frame {
+            position: relative;
             display: none;
+            width: min(100%, 760px, calc(52vh * 4 / 3));
+            margin: 0 auto 18px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #020617;
+            box-shadow: 0 8px 24px rgba(15, 31, 61, .25);
+        }
+
+        .face-recognition-frame.is-active {
+            display: block;
+        }
+
+        .face-recognition-video {
+            display: block;
             width: 100%;
-            max-width: 520px;
             aspect-ratio: 4 / 3;
             height: auto;
-            max-height: 32vh;
-            margin: 0 auto 16px;
-            border-radius: 14px;
-            background: #020617;
             object-fit: cover;
-            box-shadow: 0 8px 24px rgba(15, 31, 61, .25);
+            /* Mirror like a selfie camera so people move the right way.
+               Display only: recognition reads the real camera image. */
+            transform: scaleX(-1);
+        }
+
+        /* Oval to fit the face in: big enough and centred is exactly
+           what recognition waits for, so people get it right first time. */
+        .face-recognition-guide {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 40%;
+            aspect-ratio: 3 / 4;
+            transform: translate(-50%, -50%);
+            border: 3px dashed rgba(255, 255, 255, .85);
+            border-radius: 50%;
+            box-shadow: 0 0 0 100vmax rgba(2, 6, 23, .28);
+            pointer-events: none;
         }
 
         .face-recognition-button {
@@ -989,6 +1018,21 @@
             }
         }
 
+        /* Tablets: larger, easier-to-read recognition text and button. */
+        @media (min-width: 600px) {
+
+            .face-recognition-status {
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .face-recognition-button {
+                min-height: 62px;
+                padding: 0 36px;
+                font-size: 19px;
+            }
+        }
+
     </style>
 
 </head>
@@ -1110,13 +1154,16 @@
         Click below to identify yourself automatically.
     </div>
 
-    <video
-        id="recognitionVideo"
-        class="face-recognition-video"
-        autoplay
-        muted
-        playsinline
-    ></video>
+    <div class="face-recognition-frame" id="recognitionFrame">
+        <video
+            id="recognitionVideo"
+            class="face-recognition-video"
+            autoplay
+            muted
+            playsinline
+        ></video>
+        <div class="face-recognition-guide" aria-hidden="true"></div>
+    </div>
 
     <button
         type="button"
@@ -1757,31 +1804,9 @@
 
 
 
-{{-- =========================================================
-     MEDIAPIPE
-========================================================= --}}
-
-<script type="module">
-
-import {
-    FaceLandmarker,
-    FilesetResolver
-}
-from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1";
-
-
-window.FaceLandmarker =
-    FaceLandmarker;
-
-window.FilesetResolver =
-    FilesetResolver;
-
-
-window.dispatchEvent(
-    new Event('mediapipe-ready')
-);
-
-</script>
+{{-- MediaPipe was imported here from the internet on every page load but
+     never used (initializeFaceDetection is not called), so it was removed
+     to make the tablet page load faster. --}}
 
 
 
@@ -4249,19 +4274,19 @@ document.addEventListener('DOMContentLoaded', function () {
             'Please wait while the camera system starts.';
 
 
-        await faceapi.nets.tinyFaceDetector.loadFromUri(
-            MODEL_URL
-        );
+        // Shared with face recognition: usually already loaded, so this is instant.
+        if (window.attendanceFaceRecognition && window.attendanceFaceRecognition.loadModels) {
 
+            await window.attendanceFaceRecognition.loadModels();
 
-        await faceapi.nets.faceLandmark68Net.loadFromUri(
-            MODEL_URL
-        );
+        } else {
 
-
-        await faceapi.nets.faceRecognitionNet.loadFromUri(
-            MODEL_URL
-        );
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.isLoaded || faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.isLoaded || faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.isLoaded || faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+            ]);
+        }
 
 
         registrationModelsLoaded = true;
